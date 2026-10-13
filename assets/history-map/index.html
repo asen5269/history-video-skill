@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>历史地图组件 · 预览</title><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="masthead"><div class="identity"><span class="seal" aria-hidden="true">舆</span><div><h1>历史地图</h1><p>故事疆域 · 地名旗帜 · 镜头动画</p></div></div><span class="edition">HISTORY MAP / 组件预览</span></header>
+  <main>
+    <nav class="scenes" aria-label="地图场景"><div id="scene-tabs" role="tablist"></div><div class="scene-meta"><span id="scene-year"></span><span class="dot">·</span><span>16:9</span></div></nav>
+    <section class="map-stage" aria-label="地图预览"><canvas id="map" aria-label="历史疆域动画地图"></canvas><div id="loading" role="status">正在加载地形与疆域</div></section>
+    <section class="transport" aria-label="动画播放控制"><button id="play" class="play" aria-label="播放动画" disabled>播放</button><span id="time" class="time">00:00.0</span><input id="seek" type="range" min="0" max="15" step="0.033333333" value="0" aria-label="动画时间" disabled><span id="duration" class="time">00:15.0</span><button id="restart" class="quiet" aria-label="回到开头" disabled>归位</button><button id="fullscreen" class="quiet" aria-label="全屏查看地图">全屏</button></section>
+    <section class="below"><div class="description"><h2 id="scene-title">全局疆域</h2><p id="scene-note">地图加载后即可播放或拖动时间轴。</p></div><div class="actions"><button id="download" class="outline" disabled>保存当前帧</button><label class="outline import">加载故事 JSON<input type="file" id="import" accept=".json,application/json"></label><button id="settings" class="outline" aria-expanded="false">编辑故事</button></div></section>
+    <section id="editor-panel" hidden><label for="scene-json">修改疆域、地名、旗帜及镜头参数</label><textarea id="scene-json" spellcheck="false"></textarea><div class="editor-actions"><span id="editor-error" role="alert"></span><button id="apply" class="play">应用场景</button></div></section>
+    <footer><p id="source-credit">疆域：Seshat / Cliopatria（CC BY 4.0，裁切与简化） · 地形：Mapzen，USGS SRTM / GMTED2010、NOAA ETOPO1 · 海岸线与河流：Natural Earth</p><a href="./data/sources.json" target="_blank" rel="noopener">数据来源</a></footer>
+  </main>
+  <script type="module" src="./demo.mjs"></script>
+</body>
+</html>

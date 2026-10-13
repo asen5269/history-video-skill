@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>历史地图 · 静帧</title>
+<style>body{margin:0;background:#f3f0e8;font:14px "Microsoft YaHei",sans-serif}img{display:block;width:100%;height:auto}a{display:block;padding:16px;color:#843d2e}</style>
+<a id="save">正在生成地图…</a>
+<img id="frame" alt="历史地图静帧">
+<script type="module">
+import {HistoryMap} from './src/history-map.mjs';
+const query = new URLSearchParams(location.search);
+const scenes = await (await fetch('./data/demo-scenes.json')).json();
+scenes.push(await (await fetch('./data/qing-1820.scene.json')).json());
+const scene = scenes.find(s => s.id === query.get('scene')) ?? scenes[0];
+const canvas = document.createElement('canvas');
+const map = new HistoryMap(canvas, scene, {width:1920, height:1080, baseUrl:location.href});
+await map.ready;
+map.setTime(Number(query.get('time') ?? scene.previewTime ?? 5));
+const png = canvas.toDataURL('image/png');
+document.querySelector('#frame').src = png;
+const save = document.querySelector('#save');
+save.href = png; save.download = `${scene.id}-${scene.storyYear}.png`; save.textContent = '下载1920×1080 PNG';
+</script>
+</html>

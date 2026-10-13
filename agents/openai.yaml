@@ -1,0 +1,4 @@
+interface:
+  display_name: "历史视频解说"
+  short_description: "查史料、写稿、脚本化配音对齐与质量门，经试片和完整预览确认后导出，支持按时间段修改"
+  default_prompt: "使用 $history-video 制作一条历史解说视频，先核查资料并提交稿子，再按确认节点制作画面、30秒试片和完整预览。"

@@ -1,0 +1,1 @@
+{"image":"terrain.webp","bounds":[61.875,5.615985819155334,151.875,64.16810689799152],"extent":[0.671875,0.265625,0.921875,0.484375],"projection":"EPSG:3857","width":4096,"height":3584,"land":"land.geojson","rivers":"rivers.geojson"}

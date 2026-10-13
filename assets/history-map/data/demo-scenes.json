@@ -1,0 +1,48 @@
+[
+  {
+    "id": "overview", "name": "全局疆域", "title": "元朝疆域 · 全局概览", "storyYear": 1300,
+    "duration": 15, "previewTime": 6, "theme": "neutral", "boundaries": "data/boundaries-1300.geojson", "riverRank": 2,
+    "camera": [{"time":0,"center":[111,37],"span":76},{"time":7,"center":[115,36],"span":64},{"time":12,"center":[116,36],"span":50}],
+    "regions": [
+      {"featureId":"Yuan Dynasty","name":"元","color":"#a49ba7","opacity":0.62,"stroke":"#f6f0df","label":[108,37],"labelSize":155,"start":0,"fade":0},
+      {"featureId":"Kamakura Shogunate","name":"日本","color":"#dad4c8","opacity":0.16,"label":[138,37],"labelSize":43,"start":0,"fade":0}
+    ],
+    "flags": [{"name":"大都","place":"","coordinates":[116.4,39.93],"color":"#a44939","start":3,"height":224}],
+    "places": [{"name":"杭州","coordinates":[120.15,30.24],"start":4},{"name":"泉州","coordinates":[118.59,24.9],"start":5}],
+    "portraits": [{"src":"data/kublai.jpg","rect":[55,220,285,365],"name":"元世祖","circle":true,"start":0.8}],
+    "note":"广域历史疆域示意；画像为元世祖史料画像，不表示1300年的在位者。"
+  },
+  {
+    "id":"focus","name":"局部高亮","title":"宋金对峙 · 江南聚焦","storyYear":1200,
+    "duration":15,"previewTime":6,"theme":"neutral","boundaries":"data/boundaries-1200.geojson","riverRank":3,
+    "camera":[{"time":0,"center":[117,32],"span":29},{"time":7,"center":[119.3,31.3],"span":21},{"time":12,"center":[120,30.9],"span":17}],
+    "regions":[
+      {"featureId":"Great Jin","name":"金","color":"#9b959d","opacity":0.32,"stroke":"#f5eedb","start":0,"fade":0},
+      {"featureId":"Southern Song","name":"南宋","color":"#72c4c9","opacity":0.82,"stroke":"#e9f4e5","strokeWidth":3,"start":0.7,"fade":1.2}
+    ],
+    "flags":[{"name":"南宋","place":"临安","coordinates":[120.15,30.24],"color":"#9a4635","height":270,"width":95,"start":2}],
+    "places":[{"name":"建康","coordinates":[118.79,32.06],"dx":-16,"dy":-22,"align":"right","start":3},{"name":"襄阳","coordinates":[112.14,32.02],"start":3}],
+    "routes":[{"coordinates":[[118.79,32.06],[120.15,30.24]],"start":5,"duration":4,"color":"#ab4633","width":4,"meaning":"镜头连接示意，不表示历史行军路线"}],
+    "note":"河道为现代地理参照；区域为1200年历史疆域概化数据。"
+  },
+  {
+    "id":"factions","name":"多势力对照","title":"战国诸国 · 多势力对照","storyYear":-300,
+    "duration":15,"previewTime":6,"theme":"colored","boundaries":"data/boundaries--300.geojson","riverRank":2,
+    "camera":[{"time":0,"center":[112.5,35.5],"span":43},{"time":7,"center":[114,35.5],"span":35},{"time":12,"center":[113.5,35.5],"span":32}],
+    "regions":[
+      {"featureId":"Qin","name":"秦","color":"#dfb96a","label":"auto","labelSize":108,"fade":0,"opacity":0.73},
+      {"featureId":"Chu","name":"楚","color":"#91b8a1","label":"auto","labelSize":120,"fade":0,"opacity":0.73},
+      {"featureId":"Zhao","name":"赵","color":"#d29378","label":"auto","labelSize":90,"fade":0,"opacity":0.73},
+      {"featureId":"Wei","name":"魏","color":"#bba3c6","label":"auto","labelSize":66,"fade":0,"opacity":0.73},
+      {"featureId":"Han","name":"韩","color":"#cd88a2","label":"auto","labelSize":62,"fade":0,"opacity":0.73},
+      {"featureId":"Qi","name":"齐","color":"#81bbbe","label":"auto","labelSize":100,"fade":0,"opacity":0.73},
+      {"featureId":"Yan","name":"燕","color":"#b6c3a8","label":"auto","labelSize":82,"fade":0,"opacity":0.73}
+    ],
+    "flags":[
+      {"name":"秦","place":"咸阳","coordinates":[108.71,34.34],"color":"#b58d40","height":217,"width":77,"start":2,"dx":-80,"placeDy":-40},
+      {"name":"赵","place":"邯郸","coordinates":[114.49,36.61],"color":"#af5d40","height":230,"width":77,"start":3,"dx":90},
+      {"name":"齐","place":"临淄","coordinates":[118.3,36.82],"color":"#458f99","height":238,"width":77,"start":4,"dx":140}
+    ],
+    "note":"疆域与城市坐标用于组件广域演示，局部城址及故事边界须按所选史料细化。"
+  }
+]

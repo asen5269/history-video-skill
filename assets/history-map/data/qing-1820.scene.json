@@ -1,0 +1,579 @@
+{
+  "id": "qing",
+  "name": "清朝1820",
+  "title": "清朝省区 · 嘉庆二十五年",
+  "storyYear": 1820,
+  "duration": 18,
+  "previewTime": 5,
+  "theme": "colored",
+  "boundaries": "data/qing-1820-countries.geojson",
+  "riverRank": 2,
+  "riverColor": "#4d9fb6",
+  "camera": [
+    {
+      "time": 0,
+      "center": [
+        106.8,
+        39.7
+      ],
+      "span": 89.8
+    },
+    {
+      "time": 6,
+      "center": [
+        106.8,
+        39.7
+      ],
+      "span": 89.8
+    },
+    {
+      "time": 13,
+      "center": [
+        111.5,
+        33.5
+      ],
+      "span": 63
+    },
+    {
+      "time": 17,
+      "center": [
+        112,
+        33
+      ],
+      "span": 60
+    }
+  ],
+  "regions": [
+    {
+      "featureId": "qing-1820-outline",
+      "name": "大清",
+      "color": "#dfbd71",
+      "opacity": 0.12,
+      "stroke": "#685539",
+      "strokeWidth": 2.4,
+      "labelSize": 128,
+      "halo": "#f6e7bb",
+      "start": 0,
+      "fade": 0
+    },
+    {
+      "featureId": "Joseon",
+      "name": "朝鲜",
+      "color": "#96bec0",
+      "opacity": 0.55,
+      "stroke": "#526e70",
+      "label": [
+        127.3,
+        38
+      ],
+      "labelSize": 38,
+      "start": 0,
+      "fade": 0
+    },
+    {
+      "featureId": "Tokugawa Shogunate",
+      "name": "日本",
+      "color": "#d3cfb9",
+      "opacity": 0.25,
+      "stroke": "#868675",
+      "label": [
+        138.3,
+        36.5
+      ],
+      "labelSize": 39,
+      "start": 0,
+      "fade": 0
+    },
+    {
+      "featureId": "Nepal",
+      "name": "尼泊尔",
+      "color": "#b4bca6",
+      "opacity": 0.35,
+      "stroke": "#73816d",
+      "label": [
+        84.2,
+        27.6
+      ],
+      "labelSize": 25,
+      "start": 0,
+      "fade": 0
+    }
+  ],
+  "flags": [
+    {
+      "name": "京师",
+      "place": "",
+      "coordinates": [
+        116.4,
+        39.93
+      ],
+      "color": "#99513b",
+      "paper": "#ecd8a4",
+      "height": 162,
+      "width": 68,
+      "start": 0,
+      "fade": 0,
+      "fontSize": 32,
+      "dx": 33,
+      "dy": -15
+    }
+  ],
+  "places": [],
+  "note": "1820年历史省区：内地十八省，以及将军辖区、蒙古盟旗等。台湾属福建，海南属广东。边界为历史行政区划概化，山川采用现代地形参照。",
+  "subdivisions": {
+    "source": "data/qing-1820-admin.geojson",
+    "regions": [
+      {
+        "featureId": "chgis-25020",
+        "name": "西藏",
+        "label": [
+          86.82618,
+          31.41201
+        ],
+        "labelSize": 40,
+        "color": "#c7ceba",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25021",
+        "name": "待议地区",
+        "label": [
+          133.02625,
+          53.94088
+        ],
+        "labelSize": 23,
+        "color": "#d8d4c4",
+        "opacity": 0.12,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0,
+        "labelCaption": "尼布楚条约",
+        "captionSize": 17,
+        "dash": [
+          6,
+          4
+        ]
+      },
+      {
+        "featureId": "chgis-25022",
+        "name": "新疆",
+        "label": [
+          83.07536,
+          42.1138
+        ],
+        "labelSize": 40,
+        "color": "#dac7a4",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0,
+        "labelCaption": "将军辖区",
+        "captionSize": 18
+      },
+      {
+        "featureId": "chgis-25023",
+        "name": "盛京",
+        "label": [
+          123.6,
+          40.4
+        ],
+        "labelSize": 40,
+        "color": "#d7baa9",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0,
+        "labelCaption": "将军辖区",
+        "captionSize": 18
+      },
+      {
+        "featureId": "chgis-25024",
+        "name": "云南省",
+        "label": [
+          101.77803,
+          25.17224
+        ],
+        "labelSize": 30,
+        "color": "#beb6cb",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25025",
+        "name": "黑龙江",
+        "label": [
+          125.29645,
+          50.80618
+        ],
+        "labelSize": 40,
+        "color": "#c5c8b1",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0,
+        "labelCaption": "将军辖区",
+        "captionSize": 18
+      },
+      {
+        "featureId": "chgis-25026",
+        "name": "吉林",
+        "label": [
+          134.44638,
+          47.98264
+        ],
+        "labelSize": 40,
+        "color": "#b5c7c4",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0,
+        "labelCaption": "将军辖区",
+        "captionSize": 18
+      },
+      {
+        "featureId": "chgis-25027",
+        "name": "乌里雅苏台",
+        "label": [
+          101.28736,
+          47.60334
+        ],
+        "labelSize": 40,
+        "color": "#c5ceb8",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0,
+        "labelCaption": "将军辖区",
+        "captionSize": 18
+      },
+      {
+        "featureId": "chgis-25028",
+        "name": "青海",
+        "label": [
+          95.97999,
+          35.26864
+        ],
+        "labelSize": 40,
+        "color": "#c7bad0",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25029",
+        "name": "陕西省",
+        "label": [
+          109.58463,
+          35.54087
+        ],
+        "labelSize": 30,
+        "color": "#d9c48f",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25030",
+        "name": "安徽省",
+        "label": [
+          117.25979,
+          31.55435
+        ],
+        "labelSize": 30,
+        "color": "#c5b6ce",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25031",
+        "name": "湖北省",
+        "label": [
+          112.26328,
+          31.15641
+        ],
+        "labelSize": 30,
+        "color": "#d8b79d",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25032",
+        "name": "湖南省",
+        "label": [
+          111.51873,
+          27.38116
+        ],
+        "labelSize": 30,
+        "color": "#c0cbaa",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25033",
+        "name": "广东省",
+        "label": [
+          112.7,
+          22.9
+        ],
+        "labelSize": 30,
+        "color": "#e1c483",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25034",
+        "name": "福建省",
+        "label": [
+          118.14541,
+          25.94086
+        ],
+        "labelSize": 30,
+        "color": "#d7b1a7",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25035",
+        "name": "浙江省",
+        "label": [
+          120.23102,
+          29.19472
+        ],
+        "labelSize": 30,
+        "color": "#b5cba9",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25036",
+        "name": "直隶省",
+        "label": [
+          115.4,
+          40.75
+        ],
+        "labelSize": 30,
+        "color": "#e4c68b",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25037",
+        "name": "河南省",
+        "label": [
+          113.44322,
+          34.08063
+        ],
+        "labelSize": 30,
+        "color": "#a8c7cc",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25038",
+        "name": "内蒙古",
+        "label": [
+          111.24356,
+          42.39682
+        ],
+        "labelSize": 40,
+        "color": "#d6c8b8",
+        "opacity": 0.52,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0,
+        "labelCaption": "蒙古盟旗",
+        "captionSize": 18
+      },
+      {
+        "featureId": "chgis-25039",
+        "name": "山西省",
+        "label": [
+          112.24277,
+          38.07427
+        ],
+        "labelSize": 30,
+        "color": "#d7afa5",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25040",
+        "name": "甘肃省",
+        "label": [
+          103.1,
+          37.5
+        ],
+        "labelSize": 30,
+        "color": "#acbfb8",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25041",
+        "name": "四川省",
+        "label": [
+          103.78422,
+          30.19001
+        ],
+        "labelSize": 30,
+        "color": "#d7c39b",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25042",
+        "name": "贵州省",
+        "label": [
+          106.5526,
+          26.92137
+        ],
+        "labelSize": 30,
+        "color": "#deb3a1",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25043",
+        "name": "江西省",
+        "label": [
+          116.02689,
+          27.28384
+        ],
+        "labelSize": 30,
+        "color": "#a7c2c4",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25044",
+        "name": "广西省",
+        "label": [
+          108.50459,
+          23.9907
+        ],
+        "labelSize": 30,
+        "color": "#aec4a4",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25045",
+        "name": "山东省",
+        "label": [
+          119.0,
+          36.1
+        ],
+        "labelSize": 30,
+        "color": "#b6cbaa",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      },
+      {
+        "featureId": "chgis-25046",
+        "name": "江苏省",
+        "label": [
+          119.49252,
+          32.88607
+        ],
+        "labelSize": 30,
+        "color": "#e4cb92",
+        "opacity": 0.68,
+        "stroke": "#746b53",
+        "strokeWidth": 1.25,
+        "halo": "#f0e7d3",
+        "start": 0,
+        "fade": 0
+      }
+    ]
+  },
+  "attribution": "省区：CHGIS Version 6，哈佛大学／复旦大学，2016（重投影与概化）；邻国：Cliopatria"
+}
