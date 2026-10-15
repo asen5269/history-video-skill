@@ -1,6 +1,6 @@
 # History Video · 中文历史解说视频 Skill
 
-给 Codex 使用的历史视频制作技能。从查史料、写解说稿，到画面方案、配音、字幕、本地预览和成片导出，按阶段完成。
+供支持本地 Skill 的 AI 工具使用的历史视频制作技能。从查史料、写解说稿，到画面方案、配音、字幕、本地预览和成片导出，按阶段完成。可在 Windows、macOS、Linux 上按所需阶段配置环境。
 
 文风只有一个目标：**用大白话把事情讲清楚，十岁孩子也能听懂。** 不哄孩子、不念论文，也不靠连续的“怎么办呢”“你看”装口语。
 
@@ -16,36 +16,38 @@
 
 ## 安装
 
-需要可使用本地 Skill 的 Codex 环境。Windows 下，将仓库克隆到个人技能目录：
+先将仓库克隆到本地：
 
-```powershell
-pwsh -NoProfile -Command 'git clone https://github.com/asen5269/history-video-skill.git (Join-Path $env:USERPROFILE ".codex/skills/history-video")'
+```sh
+git clone https://github.com/asen5269/history-video-skill.git history-video
 ```
 
-如果目标目录已存在，先检查里面是否有自己的修改，不要直接覆盖。也可以下载仓库，将完整文件夹放到技能目录，确保入口位于 `history-video/SKILL.md`。
+将完整的 `history-video` 文件夹放入所用 AI 工具支持的技能目录，或按该工具的方式加载 [SKILL.md](SKILL.md)。也可以直接下载仓库。不同工具的技能目录、调用语法和工具权限可能不同，以各自配置为准。
 
-安装后，在 Codex 中通过 `$history-video` 调用。
+以 Codex 默认个人技能目录为例：Windows 为 `%USERPROFILE%\.codex\skills\history-video`，macOS / Linux 为 `~/.codex/skills/history-video`。其他工具请使用其支持的技能目录。如果目标目录已存在，先检查自己的修改，不要直接覆盖。
+
+写稿需要资料检索和文件读写能力；完整视频制作还需要运行本地脚本、访问相关服务和预览页面的能力。具体工具未提供这些能力时，只能完成其支持的阶段。
 
 ## 怎么用
 
-直接给主题、工作目录和当前要做的阶段：
+直接给主题、工作目录和当前要做的阶段。下面使用自然语言调用；支持专用 Skill 调用语法的工具，也可以通过技能选择器或相应语法调用：
 
 ```text
-$history-video 在 F:\历史视频\朱元璋 写一篇朱元璋解说稿。
+使用 history-video，在 projects/朱元璋 写一篇朱元璋解说稿。
 用大白话讲故事，十岁孩子也能听懂，先只写稿。
 ```
 
 继续已有工程：
 
 ```text
-$history-video 继续 F:\历史视频\朱元璋。
+使用 history-video，继续 projects/朱元璋。
 文稿已确认，开始做画面方案。
 ```
 
 局部修改：
 
 ```text
-$history-video 修改 F:\历史视频\朱元璋 的解说稿。
+使用 history-video，修改 projects/朱元璋 的解说稿。
 鄱阳湖这一段讲得更清楚，删掉重复总结。
 ```
 
@@ -98,10 +100,10 @@ HV_IMAGE_API_KEY=你的生图服务密钥
 
 凭据不要放进 Skill 目录或提交到 GitHub。配音接口、认证格式和音色配置以[配音规范](references/voice.md)为准；生图配置见[生图接口](references/imagegen.md)。
 
-在仓库目录下运行环境检查，将示例路径换成实际工程目录：
+在 Skill 目录下运行环境检查，将示例路径换成实际工程目录。下列命令可直接在终端执行，无需额外的 PowerShell 启动命令：
 
-```powershell
-pwsh -NoProfile -Command 'node scripts/doctor.mjs "F:/历史视频/朱元璋"'
+```sh
+node scripts/doctor.mjs "projects/朱元璋"
 ```
 
 检查只报告凭据是否存在。缺少某项工具或凭据时，只暂停依赖它的步骤。
@@ -125,8 +127,8 @@ pwsh -NoProfile -Command 'node scripts/doctor.mjs "F:/历史视频/朱元璋"'
 
 文稿完成后，在仓库目录运行结构检查：
 
-```powershell
-pwsh -NoProfile -Command 'node scripts/gate.mjs "F:/历史视频/朱元璋" --stage script'
+```sh
+node scripts/gate.mjs "projects/朱元璋" --stage script
 ```
 
 结构检查能核对字段、证据记录及相应阶段的数据一致性，不能证明史实正确、口播自然或画面好看。这些仍需人工复核。
@@ -145,6 +147,6 @@ pwsh -NoProfile -Command 'node scripts/gate.mjs "F:/历史视频/朱元璋" --st
 
 维护脚本后，在仓库目录运行回归检查：
 
-```powershell
-pwsh -NoProfile -Command 'node --test scripts/test.mjs'
+```sh
+node --test scripts/test.mjs
 ```
