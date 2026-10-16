@@ -215,7 +215,7 @@ if (stage === 'export') {
   gate('已确认导出', !!proj?.confirmed?.export);
   const okNum = (x, int) => x === undefined || (Number.isFinite(x) && x > 0 && (!int || Number.isInteger(x)));
   // HyperFrames render的--fps只支持24/30/60（hyperframes-cli文档）；Remotion不受此限。
-  const hfFps = (proj?.engine ?? 'hyperframes') === 'remotion' || proj?.fps === undefined || [24, 30, 60].includes(proj.fps);
+  const hfFps = (proj?.engine ?? 'remotion') === 'remotion' || proj?.fps === undefined || [24, 30, 60].includes(proj.fps);
   gate('fps及画幅配置有效（HyperFrames仅支持fps 24/30/60）', hfFps && okNum(proj?.fps) && okNum(proj?.width, true) && okNum(proj?.height, true));
   const want = { w: proj?.width ?? 1920, h: proj?.height ?? 1080, fps };
   const tl = load('timeline.json'), subs = load('subs.json');

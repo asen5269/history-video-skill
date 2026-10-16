@@ -15,7 +15,7 @@
     "plan": null, "trial": null, "export": null
   },
   "title": null,
-  "engine": "hyperframes",        // hyperframes | remotion | mixed
+  "engine": "remotion",           // 新工程默认remotion；兼容旧hyperframes；mixed主合成为Remotion
   "durationMinutes": { "min": 10, "max": 20 }, // 目标范围；超出只警告不阻断。用户改时长时更新
   "fps": 30, "width": 1920, "height": 1080,     // 可省，默认如左；镜头总时长门与export门按它们核对。engine为hyperframes/mixed时fps只能24/30/60
   "preview": null,                // 本地URL
@@ -66,15 +66,30 @@
 { "version": 1, "scriptVersion": 3, "shots": [
   { "id": "c01", "sids": ["s001","s002"], "dur": 6.2, "size": "wide",   // wide | medium | close
     "recipe": "crane-reveal", "layers": ["fg:城垛虚化", "mid:明军旗阵剪影", "bg:暮色远山", "fx:尘埃光"],
-    "landing": "s002「土木堡」出字时停在旗杆", "engine": "hyperframes", "render": "todo" }
+    "landing": "s002「土木堡」出字时停在旗杆", "engine": "remotion", "render": "todo" }
 ]}
 ```
 
 `version`为画面方案版本，`scriptVersion`指向当前稿子；重审方案时更新。`dur`是镜头的逻辑时长（切点），逐镜相加必须等于配音总时长；转场需要的渲染余量写在可选字段`overlap`（秒，0–2，向后伸入下一镜，不计入`dur`，末镜为0，且不得超过下一镜`dur`）。`recipe`取值与规则见[镜头运动](motion.md)。`parallax-dolly`至少3层；其它镜头按实际需要分层。`detail-hunt`和`evidence-hold`至少1层并给`overlay`。每镜须有正时长、合法景别、关联句子和落点/静止目的，方案覆盖全文；完整检查时镜头总时长与真实配音误差不超过1帧（30fps）。
 
+## 视觉制作字段
+
+出现人物立绘时另建工程`characters.json`，记录`scriptVersion`、角色稳定ID、关联句子/镜头、时期身份、外观与服饰依据、艺术选择及版本化变体。角色变体映射到`assets.json`中的真实立绘；公共组件只消费解析后的资产与场景配置。格式与从故事生成的步骤见[角色资产流程](character-map.md#从故事生成角色资产)。新增记录目前由执行者维护与人工验收，不是已有自动角色生成器或gate检查项。
+
+`shots.json` 每镜补充 `textAnchor`（对应台词）、`visualAction`（可见动作或阅读细节）、`assetIds`（素材ID数组），以及：
+
+- `visualRole`：现场 / 证据 / 空间 / 关系 / 情绪。
+- `stateChange`：起始状态→动作/揭示→结束状态；静止镜写阅读对象。
+- `continuity`：相邻镜的空间、方向、光线、形状关系或跳跃目的。
+- `assetMethod`：史料原图 / 完整场景 / 场景拆层 / 解释动画 / 视频素材。
+- `reuseReason`：重复使用素材时新增的信息或呼应目的，适用条件见制作规范。
+
+工程 `visual-direction.md` 保存风格参考、构图/光线约束与成本估计；`visual-review.md` 保存实际观看、复用统计、缺陷截图与修正。示意场景的性质与依据写入对应素材来源记录。上述新增字段由人工核对，现有gate不验证其语义；旧工程在修改对应镜头时补齐。详细决策见[视觉导演](visual-direction.md)。
+
 ## 缓存与版本
 
-- 配音旁的`<id>.mp3.json`记录实际TTS文本、音色、语速、编码、cluster及音频SHA256。默认仅复用完全匹配的缓存；`tts.mjs <项目> --ids s001,s002`强制重做指定句，`--force`重做所选范围或全稿。
+- 配音旁的`<id>.mp3.json`记录实际TTS文本、音色、语速、编码及音频SHA256。旧HTTP缓存带`cluster`；新WebSocket缓存带`protocol: "v3"`、`resourceId`、`sampleRate`、`bitRate`、`speechRate`和`enableSubtitle`。两种有效缓存均可复用；换协议不自动重做已有匹配音频。`tts.mjs <项目> --ids s001,s002`或`--force`按当前协议强制重做。
+- 新版旁存`<id>.mp3.subtitles.json`：`timebase: "raw-sentence"`、实际TTS文本、原始音频SHA256、`TTSSubtitle`原生事件及usage。原生时间基于未裁剪音频，不能直接写入基于裁剪WAV的`align.json`；当前字幕流水线仍用whisperX逐字对齐，不以未校验的原生时间兜底。
 - `durations.json`格式为`{ "version": <稿子版本>, "items": { "s001": { "duration": 2.35, "tts": "…", "rawHash": "…", "audioHash": "…", "threshold": "-50dB" } } }`。裁剪缓存另存`<id>.wav.json`，改阈值或原始音频后自动重裁剪。
 - `timeline.json`含稿子版本、实测总时长、`voiceHash`及逐句`id/start/end/pause/tts/audioHash`。配音以48kHz采样位置拼接；`--no-audio`仅生成时间轴，不能通过配音质量门。
 - `align.json`格式为`{ "schema": 2, "timebase": "sentence", "items": { "s001": { "tts": "…", "audioHash": "…", "model": "…", "chars": [{ "c": "甲", "s": 0.05, "e": 0.2 }] } } }`。字级时间相对于该句WAV，不含全片偏移。文本/音频/模型一致才复用；`--ids`强制重对齐指定句，范围外有失效缓存就报错。

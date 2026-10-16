@@ -28,6 +28,6 @@ export function importHvEnv(from = process.cwd()) {
 export const curlBin = process.env.HV_CURL ?? (process.platform === 'win32' ? 'curl.exe' : 'curl');
 export const curlEsc = s => String(s).replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\r', '\\r').replaceAll('\n', '\\n');
 export function curl(config, { cwd, args = [], binary = false } = {}) {
-  const r = spawnSync(curlBin, [...args, '-K', '-'], { input: config, cwd, maxBuffer: 1 << 30, encoding: binary ? 'buffer' : 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+  const r = spawnSync(curlBin, [...args, '-K', '-'], { input: Buffer.from(config, 'utf8'), cwd, maxBuffer: 1 << 30, encoding: binary ? undefined : 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
   return { status: r.error ? -1 : r.status, out: r.stdout };
 }

@@ -20,15 +20,22 @@ export function pauseOf(script, i) {
   if (!Number.isFinite(p) || p < 0.3 || p > PAUSE_MAX) throw new Error(s.id + ' 停顿无效：数字0.3–' + PAUSE_MAX + '或档位' + Object.keys(PAUSE_LEVELS).join('/'));
   return p;
 }
-export const ttsSpec =text => ({ text, voice: 'zh_male_liufei_uranus_bigtts', speed: 1.1, cluster: 'volcano_tts', encoding: 'mp3' });
+export const ttsSpec = (text, protocol = 'v1') => protocol === 'v3' ?
+  { text, voice: 'zh_male_liufei_uranus_bigtts', speed: 1.1, encoding: 'mp3', protocol: 'v3',
+    resourceId: 'seed-tts-2.0', sampleRate: 24000, bitRate: 160000, speechRate: 10, enableSubtitle: true } :
+  { text, voice: 'zh_male_liufei_uranus_bigtts', speed: 1.1, cluster: 'volcano_tts', encoding: 'mp3' };
+export function validTtsMeta(meta, text) {
+  if (!meta || (meta.protocol != null && !['v1', 'v3'].includes(meta.protocol))) return false;
+  return Object.entries(ttsSpec(text, meta.protocol ?? 'v1')).every(([key, value]) => meta[key] === value);
+}
 
 export function checkAudio(dir, sentence, record) {
   if (!safeId(sentence.id)) throw new Error('非法句子ID');
   const raw = join(dir, 'audio/raw', `${sentence.id}.mp3`);
   const wav = join(dir, 'audio/trim', `${sentence.id}.wav`);
   const meta = readJson(`${raw}.json`);
-  const spec = ttsSpec(ttsText(sentence));
-  if (Object.entries(spec).some(([k, v]) => meta[k] !== v) || meta.audioHash !== audioHash(raw))
+  const spec = ttsSpec(ttsText(sentence), meta.protocol ?? 'v1');
+  if (!validTtsMeta(meta, spec.text) || meta.audioHash !== audioHash(raw))
     throw new Error(`${sentence.id} 原始配音缓存失效，重跑tts`);
   const hash = audioHash(wav);
   if (!record || record.tts !== spec.text || record.rawHash !== meta.audioHash || record.audioHash !== hash ||

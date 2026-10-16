@@ -3,7 +3,7 @@
 import { existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { readJson, audioHash, ttsText, ttsSpec, safeId } from './audio-cache.mjs';
+import { readJson, audioHash, ttsText, validTtsMeta, safeId } from './audio-cache.mjs';
 
 const args = process.argv.slice(2), dir = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--threshold');
 const ti = args.indexOf('--threshold'), threshold = ti < 0 ? '-50dB' : args[ti + 1];
@@ -19,7 +19,7 @@ try {
     if (!safeId(s.id)) throw new Error('非法句子ID');
     const mp3 = join(raw, s.id + '.mp3'), wav = join(trim, s.id + '.wav'), text = ttsText(s);
     const meta = readJson(mp3 + '.json'), rawHash = audioHash(mp3);
-    if (Object.entries(ttsSpec(text)).some(([k, v]) => meta[k] !== v) || meta.audioHash !== rawHash)
+    if (!validTtsMeta(meta, text) || meta.audioHash !== rawHash)
       throw new Error(s.id + ' 配音缓存失效，重跑tts');
     let cache = null;
     if (existsSync(wav + '.json') && existsSync(wav)) { try { cache = readJson(wav + '.json'); } catch { cache = null; } }

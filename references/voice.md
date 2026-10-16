@@ -1,24 +1,26 @@
 # 豆包配音规范
 
-以下为用户已验证的调用约定。不要擅自换接口、音色、认证格式或网络客户端。
+默认使用V3双向WebSocket；2026-10-14已在用户环境用新版API Key、刘飞2.0实际返回可解码MP3。音色与语速保持用户设置。
 
 ## 请求
 
-- POST `https://openspeech.bytedance.com/api/v1/tts`。
-- 必须通过系统curl调用（Windows为`curl.exe`，其它系统为`curl`，`scripts/env.mjs`自动选择）；不能用Python urllib，用户环境的代理会截断响应。改用Node `fetch`等其它客户端前，须在用户的真实代理环境验证响应完整。
-- 请求头`Authorization: Bearer;${TOKEN}`：分号，没有空格。
-- 音色`zh_male_liufei_uranus_bigtts`，`speed_ratio: 1.1`。
-- 请求体`app.cluster: volcano_tts`，`request.operation: query`，每次请求`request.reqid`使用新UUID，`audio.encoding: mp3`。
-- 成功响应`code: 3000`；`data`是base64编码的MP3。
-- 完整请求字段依据已打通的本地调用代码或官方文档核验；不要猜测其余必填项。
+- WSS `wss://openspeech.bytedance.com/api/v3/tts/bidirection`，依赖Python和`websockets>=15`；安装：`python -m pip install "websockets>=15"`。
+- 新鉴权：`X-Api-Key`读取`DOUBAO_TTS_API_KEY`；`X-Api-Resource-Id: seed-tts-2.0`。不存在新版Key时可用旧`APPID/TOKEN`，按[旧鉴权官方说明](https://docs.volcengine.com/docs/6561/2534847?lang=zh)发送`X-Api-App-Id`、`X-Api-Access-Key`与随机请求ID；不要把新版Key填到旧TOKEN字段。
+- 音色`zh_male_liufei_uranus_bigtts`，`audio_params.speech_rate: 10`对应原1.1倍速；MP3、24000Hz、160000bps、`enable_subtitle: true`。
+- 二进制协议实现见`scripts/tts-v3.py`，依据用户提供的官方协议附件。建立连接→等待ConnectionStarted→StartSession→等待SessionStarted→TaskRequest→FinishSession→收音频与字幕直到SessionFinished；之后才允许下一句复用同一连接，最后FinishConnection。不能把这些事件当普通JSON WebSocket消息。
+- 收齐音频且SessionFinished后写MP3与hash元数据；服务拒绝、空音频、消息截断或超时则报错停止，不自动切换协议重复计费。接口升级不重置账户额度。
+- `node scripts/tts.mjs <项目>`默认V3。旧有效缓存仍可复用；`--ids s001`或`--force`按当前协议重合成。需旧HTTP时显式`--protocol v1`或`HV_TTS_PROTOCOL=v1`。
+- 旧HTTP仍使用系统curl：POST `/api/v1/tts`，`Authorization: Bearer;TOKEN`，`cluster: volcano_tts`、`speed_ratio: 1.1`、`operation: query`，成功`code:3000`返回base64。用户代理曾截断Python urllib响应，此限制针对旧HTTP，不阻止已实测的WebSocket客户端。
 
 ## 凭据
 
 放在项目目录或其上级的`.env`/`key.env`，脚本逐级向上查找并自动读取；已设置的环境变量优先。
 
 ```
-DOUBAO_TTS_APPID=...
-DOUBAO_TTS_TOKEN=...
+DOUBAO_TTS_API_KEY=...
+# 只有继续使用旧版控制台时才配置下面两项：
+# DOUBAO_TTS_APPID=...
+# DOUBAO_TTS_TOKEN=...
 HV_IMAGE_BASE_URL=...
 HV_IMAGE_API_KEY=...
 ```
@@ -45,7 +47,7 @@ HV_IMAGE_API_KEY=...
 
 ## 字幕
 
-豆包不返回字级时间戳。必须使用支持中文的强制对齐模型，对真实配音和已确认正文逐字对齐；不能按字数平均分配时间冒充强制对齐。
+新版`enable_subtitle`支持原生字级时间戳；脚本保存为`audio/raw/<id>.mp3.subtitles.json`，含实际TTS文本、原始音频hash、TTSSubtitle事件及usage。它基于未裁剪音频，不能直接冒充裁剪WAV的对齐结果。当前仍用whisperX完成裁剪后逐字对齐；以后接入原生时间须先验证漏字、专名映射与首部裁剪偏移，不能按字数平均分配时间兜底。
 
 对每句裁剪后的WAV从0开始对齐，缓存句内相对时间；导出字幕时读取当前timeline，加上句子起点，不缓存旧全片偏移。TTS同音字替换与原文建立对应关系，字幕恢复原字；年份也保留原稿显示形式。断句依据口播节奏，检查专名、重叠、负时长、漏句以及偏移。保留字级结果用于局部更新，SRT按可读字幕块导出。字符缺失或时间不完整时失败，不能用平均时间或最后一字兜底。
 

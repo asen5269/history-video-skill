@@ -1,0 +1,119 @@
+{
+  "id": "ming1600",
+  "name": "明朝1600",
+  "storyYear": 1600,
+  "duration": 15,
+  "theme": "colored",
+  "boundaries": "data/boundaries-1600.geojson",
+  "riverRank": 3,
+  "riverColor": "#447c9c",
+  "camera": [
+    {
+      "time": 0,
+      "center": [
+        110.5,
+        33
+      ],
+      "span": 67
+    },
+    {
+      "time": 15,
+      "center": [
+        111,
+        33
+      ],
+      "span": 63
+    }
+  ],
+  "regions": [
+    {
+      "featureId": "Ming Dynasty",
+      "name": "大明",
+      "color": "#e97873",
+      "opacity": 0.78,
+      "stroke": "#fff4de",
+      "label": [
+        111,
+        31.8
+      ],
+      "labelSize": 95,
+      "fade": 0
+    },
+    {
+      "featureId": "Mongol Khanate",
+      "name": "蒙古",
+      "color": "#e9bd69",
+      "label": [
+        109,
+        44.5
+      ],
+      "labelSize": 48,
+      "fade": 0
+    },
+    {
+      "featureId": "Joseon",
+      "name": "朝鲜",
+      "color": "#88b9ab",
+      "label": [
+        127.6,
+        39.4
+      ],
+      "labelSize": 36,
+      "fade": 0
+    }
+  ],
+  "places": [
+    {
+      "name": "北京",
+      "coordinates": [
+        116.4,
+        39.92
+      ],
+      "size": 30,
+      "dx": 22,
+      "dy": 18,
+      "start": 0,
+      "fade": 0
+    },
+    {
+      "name": "南京",
+      "coordinates": [
+        118.78,
+        32.06
+      ],
+      "size": 29,
+      "dx": 18,
+      "dy": 22,
+      "start": 0,
+      "fade": 0
+    },
+    {
+      "name": "西安",
+      "coordinates": [
+        108.94,
+        34.26
+      ],
+      "size": 28,
+      "start": 0,
+      "fade": 0
+    }
+  ],
+  "flags": [
+    {
+      "name": "明",
+      "coordinates": [
+        116.4,
+        39.92
+      ],
+      "color": "#a9413d",
+      "height": 185,
+      "width": 78,
+      "start": 0,
+      "fade": 0,
+      "dx": -45
+    }
+  ],
+  "routes": [],
+  "portraits": [],
+  "note": "1600年历史疆域概化数据，CC BY 4.0；不是省区或局部战役边界。历史控制范围与数据精度需按具体题材复核。"
+}

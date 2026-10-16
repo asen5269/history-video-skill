@@ -212,7 +212,8 @@ test('export门核对output.mp4的画幅、帧率、时长、音轨与字幕范�
   make('1920x1080', 30); success(node('gate.mjs', dir, '--stage', 'export'));
   make('1280x720', 30); let r = node('gate.mjs', dir, '--stage', 'export'); failed(r); assert.match(r.stdout, /画幅1280×720，应为1920×1080/);
   make('1920x1080', 25); r = node('gate.mjs', dir, '--stage', 'export'); failed(r); assert.match(r.stdout, /帧率25\.00，应为30/);
-  proj.fps = 25; json(dir, 'project.json', proj); r = node('gate.mjs', dir, '--stage', 'export'); failed(r); assert.match(r.stdout, /FAIL  fps及画幅配置有效/);
+  proj.fps = 25; json(dir, 'project.json', proj); success(node('gate.mjs', dir, '--stage', 'export'));
+  proj.engine = 'hyperframes'; json(dir, 'project.json', proj); r = node('gate.mjs', dir, '--stage', 'export'); failed(r); assert.match(r.stdout, /FAIL  fps及画幅配置有效/);
   proj.engine = 'remotion'; json(dir, 'project.json', proj); success(node('gate.mjs', dir, '--stage', 'export'));
   success(run('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', `color=c=black:s=1920x1080:r=25:d=${total}`, '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', join(dir, 'output.mp4')]));
   r = node('gate.mjs', dir, '--stage', 'export'); failed(r); assert.match(r.stdout, /无音轨/);

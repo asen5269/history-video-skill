@@ -4,6 +4,14 @@
 
 ## 运行与接入
 
+人物与地图组合使用`StoryMapView.tsx`（普通React）或`RemotionStoryMap.tsx`（按帧）；传入scene、assets、characters、layout、theme，以及地图和人物资产的baseUrl。地图主导、单人讲述、双人对峙共享资产与数据，具体配置见[人物对峙地图](character-map.md#公共组件配置)。
+
+可选布局参数：`autoFit:{featureIds:[历史几何ID],padding:{left,right,top,bottom}}`自动框住指定疆域（安全区按1920×1080逻辑像素）；启用时可省略camera，并覆盖手工camera。`zoom`默认1，可放大检查细节；主动放大可能裁出边界。`labelLayout`默认启用，避让旗帜与其它标签，拥挤时隐藏低优先级名称。地点可设`kind:"capital"`、`priority`、`maxSpan`（可见最大经度跨度）；默认都城全景可见、普通城市跨度≤50度才出现。区域可显式设maxSpan。避让采用确定性候选位置，不随播放累积；偏移的城市名称有引线。关闭labelLayout保留原始指定排版。渲染结果仍需检查旋转/竖排标签与复杂省区的阅读效果。
+
+React宿主使用`assets/history-map/src/HistoryMapView.tsx`，传入`scene/baseUrl/time/width/height`；普通预览由页面时间驱动。Remotion使用同目录`RemotionHistoryMap.tsx`，以`useCurrentFrame()/fps`驱动并等待地图加载。内容与样式放scene，React组件不写具体朝代。场景或素材版本改变时以React key重建Remotion实例，不沿用旧加载句柄。
+
+需要真实倾斜透视和地形起伏时，使用[公共3D地图组件](maps-3d.md)。2D与3D共享经纬度、地理数据来源和时期核查原则；朝代/战役地点、路线、区域均写入故事配置，不改公共组件源码。3D能力和当前限制见该文，不将二维CSS倾斜称为真实3D。
+
 在skill目录执行：
 
 ```
@@ -32,7 +40,7 @@ map.setFrame(240, 30); // 视频帧号与fps
 - `regions[].states`：`{time,featureId或geometry,name,color,label}`快照，到该时刻直接切换几何；`years:[{time,year}]`同步切换年代文字，不捏造过渡边界。
 - `places`与`flags`：`coordinates`定位；flags支持竖排`name`、地点名`place`、颜色、高度、出现时间，以及避让文字的`dx/dy`偏移和引线。
 - `portraits`：本地图片`src`、设计坐标`rect:[x,y,w,h]`、姓名、圆形裁切与出现时间；姓名可替换，无生成脸部需求。
-- **内置边界年份覆盖（仅此四档，均为Cliopatria概化数据）**：公元前300、1200、1300、1820。其它年份（汉、唐、宋、明等）没有内置边界，须按下文“没有对应年份边界数据”的规则处理：只用地形与城市坐标，或提出有依据的重建方案供用户确认，不得拿相近年份顶替。1820另有CHGIS十八省区。
+- **内置边界年份覆盖（仅此五档，均为Cliopatria概化数据）**：公元前300、1200、1300、1600、1820。其它年份没有内置边界，须按下文“没有对应年份边界数据”的规则处理：只用地形与城市坐标，或提出有依据的重建方案供用户确认，不得拿相近年份顶替。1820另有CHGIS十八省区。
 - 组件当前自带底图覆盖东亚，河流/海岸为现代地理参照；自带历史边界为Cliopatria概化数据，故事所需的精细疆域须替换或细化。地形、疆域及画像来源保存在`data/sources.json`。
 
 清朝省区由`tools/prepare-qing.py --cache <缓存目录>`转换，转换环境需要pyshp、pyproj、shapely；支持在`<缓存目录>/python`安装转换依赖。CHGIS的Dataverse元数据列为CC0，但随附V6协议限制商业使用与数据再分发，不能据元数据将这套省界标为无条件商用。授权原文与处理记录见`data/sources.json`。

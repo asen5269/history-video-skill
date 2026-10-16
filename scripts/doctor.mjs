@@ -35,6 +35,8 @@ const py = ['python3', 'python'].find(c => probe(c, ['--version']));
 if (!py) add('WARN', 'Python', '未找到；align.py不可用。' + (mac ? 'brew install python' : ''));
 else {
   add('PASS', 'Python', py + ' ' + probe(py, ['--version']));
+  const ws = probe(py, ['-c', 'import websockets; assert int(websockets.__version__.split(".")[0]) >= 15']);
+  add(ws !== null ? 'PASS' : 'WARN', 'websockets ≥ 15（新版TTS）', ws !== null ? '' : '未安装或版本过低；pip install "websockets>=15"');
   const wx = probe(py, ['-c', 'import whisperx'], 90000);
   add(wx !== null ? 'PASS' : 'WARN', 'whisperx', wx !== null ? '' : '未安装或导入失败；pip install whisperx（Apple Silicon用CPU即可，--device cpu为默认）。SKILL.md里的`python`在Mac上请写`' + py + '`');
 }
@@ -63,8 +65,11 @@ if (project) {
     }
     break;
   }
-  for (const k of ['DOUBAO_TTS_APPID', 'DOUBAO_TTS_TOKEN', 'HV_IMAGE_BASE_URL', 'HV_IMAGE_API_KEY'])
+  for (const k of ['DOUBAO_TTS_API_KEY', 'DOUBAO_TTS_APPID', 'DOUBAO_TTS_TOKEN', 'HV_IMAGE_BASE_URL', 'HV_IMAGE_API_KEY'])
     add(keys.has(k) || process.env[k] ? 'PASS' : 'WARN', '凭据 ' + k, keys.has(k) || process.env[k] ? '已设置' : '未设置：写入工程或上级目录的.env');
+  const hasTts = keys.has('DOUBAO_TTS_API_KEY') || process.env.DOUBAO_TTS_API_KEY ||
+    ((keys.has('DOUBAO_TTS_APPID') || process.env.DOUBAO_TTS_APPID) && (keys.has('DOUBAO_TTS_TOKEN') || process.env.DOUBAO_TTS_TOKEN));
+  add(hasTts ? 'PASS' : 'WARN', 'TTS可用鉴权组合', hasTts ? '新版API Key或旧版APPID/TOKEN已设置；不代表额度足够' : '至少配置一种鉴权组合');
   add(existsSync(join(project, 'project.json')) ? 'PASS' : 'WARN', 'project.json', existsSync(join(project, 'project.json')) ? '' : '工程目录无project.json');
 } else add('WARN', '凭据与工程检查', '未传工程目录，已跳过');
 

@@ -1,3 +1,4 @@
+import {fitCamera,placeLabel} from './layout.mjs';
 import { mercator, cameraAt, geometryPath, routeSlice, clamp, smooth } from './geometry.mjs';
 
 const DEFAULT_ROOT = new URL('../', import.meta.url);
@@ -16,6 +17,7 @@ export class HistoryMap {
     this.ready = this.load(scene);
   }
   async load(scene) {
+    if(scene.autoFit&&!scene.camera?.length)scene={...scene,camera:[{time:0,center:[0,0],span:360}]};
     if (!Number.isFinite(scene.duration) || scene.duration <= 0) throw new Error('镜头duration须为正数');
     if (!scene.camera?.length || scene.camera.some((k, i) => !Number.isFinite(k.time) || !Number.isFinite(k.span) || k.span <= 0 || (i && k.time <= scene.camera[i - 1].time)))
       throw new Error('镜头关键帧需要递增time、有效center和正span');
@@ -52,10 +54,12 @@ export class HistoryMap {
         this.paths.set(state, path);
       }
     }
+    if(scene.autoFit){const ids=scene.autoFit.featureIds??this.regions.map(r=>r.featureId);const geometries=ids.flatMap(id=>this.features.get(id)??[]);const fitted=fitCamera(geometries,{padding:scene.autoFit.padding});scene.camera=[fitted,{...fitted,time:scene.duration}];}
     (scene.places ?? []).forEach(p => mercator(p.coordinates));
     (scene.flags ?? []).forEach(p => mercator(p.coordinates));
     (scene.routes ?? []).forEach(r => { if (r.coordinates.length < 2) throw new Error('路线至少两个坐标'); r.coordinates.forEach(mercator); });
     this.portraits = await Promise.all((scene.portraits ?? []).map(async p => ({ ...p, image: await image(url(p.src)) })));
+    if(this.disposed)return this;
     this.loaded = true; this.setTime(this.time); return this;
   }
   setTime(seconds) {
@@ -68,6 +72,7 @@ export class HistoryMap {
     if (!Number.isFinite(fps) || fps <= 0) throw new Error('fps须为正数');
     return this.setTime(frame / fps);
   }
+  dispose() { this.disposed = true; this.loaded = false; }
   project(coordinates) {
     const p = mercator(coordinates); return [p[0] * this.scale + this.tx, p[1] * this.scale + this.ty];
   }
@@ -90,6 +95,9 @@ export class HistoryMap {
   draw() {
     const c = this.ctx, scene = this.scene, time = this.time;
     const camera = cameraAt(scene.camera, time);
+    camera.span/=Math.max(.5,Math.min(4,scene.zoom??1));
+    this.currentSpan=camera.span;this.labelQueue=[];this.occupied=structuredClone(scene.labelObstacles??[]);
+    if(scene.labelLayout!==false){this.occupied.push({x:1800,y:900,w:120,h:180});}
     this.scale = this.width / (camera.span / 360);
     this.tx = this.width / 2 - camera.center[0] * this.scale; this.ty = this.height / 2 - camera.center[1] * this.scale;
     c.resetTransform(); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
@@ -131,27 +139,31 @@ export class HistoryMap {
       c.fillStyle = route.color ?? '#a4412d'; c.beginPath(); c.arc(...p, 7, 0, Math.PI * 2); c.fill(); this.map();
     }
     this.screen();
+    if(scene.labelLayout!==false)for(const f of scene.flags??[]){if(!this.opacity(f))continue;const [x,y]=this.logical(f.coordinates);this.occupied.push({x:x+(f.dx??0)-8,y:y+(f.dy??0)-(f.height??244)-25,w:(f.width??90)+24,h:(f.height??244)+35});}
     for (const region of states) {
-      if (!region.label) continue; const p = this.logical(region.label); p[0] += region.labelOffset?.[0] ?? 0; p[1] += region.labelOffset?.[1] ?? 0;
+      if (!region.label || (region.maxSpan!==undefined && this.currentSpan>region.maxSpan)) continue; const p = this.logical(region.label); p[0] += region.labelOffset?.[0] ?? 0; p[1] += region.labelOffset?.[1] ?? 0;
       c.save(); c.globalAlpha = this.opacity(region);
-      this.text(region.name, ...p, region.labelSize ?? 90, { rotation: region.rotation ?? 0, halo: region.halo ?? '#ece9dd', vertical: region.vertical }); c.restore();
+      this.label(region.name,...p,region.labelSize??90,{rotation:region.rotation??0,halo:region.halo??'#ece9dd',vertical:region.vertical},region.priority??40); c.restore();
       if (region.labelCaption) {
         c.save(); c.globalAlpha = this.opacity(region);
-        this.text(region.labelCaption, p[0], p[1] + (region.labelSize ?? 90) * 0.85, region.captionSize ?? 19, { color:'#4d554d', halo:region.halo ?? '#ece9dd' }); c.restore();
+        this.label(region.labelCaption, p[0], p[1] + (region.labelSize ?? 90) * 0.85, region.captionSize ?? 19, { color:'#4d554d', halo:region.halo ?? '#ece9dd' },30); c.restore();
       }
     }
     for (const place of scene.places ?? []) {
-      const alpha = this.opacity(place); if (!alpha) continue;
+      const alpha = this.opacity(place); if (!alpha || this.currentSpan>(place.maxSpan??(place.kind==='capital'?180:50))) continue;
       const p = this.logical(place.coordinates); c.save(); c.globalAlpha = alpha;
       c.beginPath(); c.arc(...p, 8, 0, Math.PI * 2); c.strokeStyle = '#e9e5d3'; c.lineWidth = 2; c.fillStyle = '#25363b'; c.fill(); c.stroke();
-      this.text(place.name, p[0] + (place.dx ?? 15), p[1] + (place.dy ?? 25), place.size ?? 30, { align: place.align ?? 'left' }); c.restore();
+      this.label(place.name,p[0]+(place.dx??15),p[1]+(place.dy??25),place.size??30,{align:place.align??'left'},place.priority??80,p); c.restore();
     }
     for (const flag of scene.flags ?? []) this.flag(flag);
     for (const p of this.portraits) this.portrait(p);
+    this.flushLabels();
     if (scene.title) this.heading();
     this.compass();
     if (scene.caption) this.text(scene.caption, 960, 1027, 39, { color: '#fffdf6', halo: '#1b2223' });
   }
+  label(text,x,y,size,options={},priority=40,anchor=null){if(this.scene.labelLayout===false)return this.text(text,x,y,size,options);const c=this.ctx;c.font='600 '+size+'px '+FONT;const w=options.vertical?size:c.measureText(text).width,h=options.vertical?[...text].length*size*1.06:size*1.25;if(options.align==='left')x+=w/2;if(options.align==='right')x-=w/2;this.labelQueue.push({text,x,y,size,options:{...options,align:'center'},priority,anchor,w,h,alpha:c.globalAlpha});}
+  flushLabels(){for(const label of this.labelQueue.sort((a,b)=>b.priority-a.priority)){const location=placeLabel(label,this.occupied);if(!location)continue;this.ctx.save();this.ctx.globalAlpha=label.alpha;if(label.anchor&&(Math.abs(location.x-label.x)>5||Math.abs(location.y-label.y)>5)){this.ctx.strokeStyle='#606d66';this.ctx.lineWidth=1;this.ctx.beginPath();this.ctx.moveTo(...label.anchor);this.ctx.lineTo(location.x,location.y);this.ctx.stroke();}this.text(label.text,location.x,location.y,label.size,label.options);this.ctx.restore();}}
   flag(flag) {
     const alpha = this.opacity(flag); if (!alpha) return;
     const c = this.ctx, [x, y] = this.logical(flag.coordinates), color = flag.color ?? '#984632';

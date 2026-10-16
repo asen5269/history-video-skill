@@ -2,7 +2,7 @@
 
 供支持本地 Skill 的 AI 工具使用的历史视频制作技能。从查史料、写解说稿，到画面方案、配音、字幕、本地预览和成片导出，按阶段完成。可在 Windows、macOS、Linux 上按所需阶段配置环境。
 
-文风只有一个目标：**用大白话把事情讲清楚，十岁孩子也能听懂。** 不哄孩子、不念论文，也不靠连续的“怎么办呢”“你看”装口语。
+文稿要听起来像有人在跟你唠这段事：说到哪儿解释到哪儿，有自己的反应，也能顺嘴插一句。不要把一篇历史解说文章换成简单词再朗读。“十岁孩子能听懂”是理解门槛，不是儿童教学口吻。
 
 ## 能做什么
 
@@ -24,7 +24,7 @@ git clone https://github.com/asen5269/history-video-skill.git history-video
 
 将完整的 `history-video` 文件夹放入所用 AI 工具支持的技能目录，或按该工具的方式加载 [SKILL.md](SKILL.md)。也可以直接下载仓库。不同工具的技能目录、调用语法和工具权限可能不同，以各自配置为准。
 
-以 Codex 默认个人技能目录为例：Windows 为 `%USERPROFILE%\.codex\skills\history-video`，macOS / Linux 为 `~/.codex/skills/history-video`。其他工具请使用其支持的技能目录。如果目标目录已存在，先检查自己的修改，不要直接覆盖。
+本项目当前维护的技能目录为 `~/.agents/skills/history-video`，Windows 对应 `%USERPROFILE%\.agents\skills\history-video`。请确认所用工具支持该目录；其他工具按各自配置加载。避免在多个技能目录重复安装同名版本。如果目标目录已存在，先检查自己的修改，不要直接覆盖。
 
 写稿需要资料检索和文件读写能力；完整视频制作还需要运行本地脚本、访问相关服务和预览页面的能力。具体工具未提供这些能力时，只能完成其支持的阶段。
 
@@ -53,9 +53,9 @@ git clone https://github.com/asen5269/history-video-skill.git history-video
 
 ## 文稿怎么写
 
-先讲谁遇到了什么事、做了什么、接着发生什么。官职和制度影响理解时，结合当时的事情解释一句。
+像跟对面的人聊天一样讲事情，不要求开头把背景和人物一口气报齐。讲到陌生的人名、官职时，顺便解释，随后接着讲。
 
-用日常说话的词，长短句自然交替，按完整意思分段。不会把每段都写成“提问—回答—总结”，也不要求每段都有笑点或金句。配音数据需要拆句，但技术上的拆句不决定正文的句长和段落。
+允许具体的吐槽、意外和自然提问，不规定每段都得有笑点、反转或金句。先写出一个人会怎么说，不能只靠短句和语气词制造口语感。配音数据需要拆句，但技术上的拆句不决定正文的句长和段落。
 
 史实与评论分开。重要事件保留出处与原文定位；找不到依据的对白、动作和人物心理不编。史书中的指控也不直接当成已经独立证实的事实。
 
@@ -86,7 +86,7 @@ git clone https://github.com/asen5269/history-video-skill.git history-video
 | --- | --- |
 | 制作脚本 | Node.js、Python |
 | 音频处理和媒体校验 | FFmpeg、ffprobe |
-| 豆包配音 | 系统 curl、可用的豆包 TTS 应用与音色权限 |
+| 豆包配音 | Python websockets≥15、可用的豆包 TTS API Key 与音色权限；旧HTTP方式另需系统 curl |
 | 中文字幕强制对齐 | WhisperX 及所需模型，首次运行需下载 |
 | AI 辅助插图（可选） | 需要生成独立插图时，按生图接口规范配置服务；不生成背景 |
 | 画面合成与预览 | 相应的 HyperFrames 或 Remotion 环境 |
@@ -94,8 +94,10 @@ git clone https://github.com/asen5269/history-video-skill.git history-video
 在项目目录或其上级工作目录创建 `.env` 或 `key.env`，填写对应配置：
 
 ```dotenv
-DOUBAO_TTS_APPID=你的应用ID
-DOUBAO_TTS_TOKEN=你的访问令牌
+DOUBAO_TTS_API_KEY=你的新版API密钥
+# 仅使用旧版鉴权时填写：
+# DOUBAO_TTS_APPID=你的应用ID
+# DOUBAO_TTS_TOKEN=你的访问令牌
 HV_IMAGE_BASE_URL=你的生图服务地址
 HV_IMAGE_API_KEY=你的生图服务密钥
 ```
