@@ -1,5 +1,7 @@
 # 生图接口
 
+当前默认只按需生成地图上的独立插图，不生成背景、完整场景或地图。底图与疆界来自有依据的地理数据；已有史料画像和合适插图可直接使用，不把生图设为必经步骤。透明插图须实际检查Alpha与边缘，纯色底或画出的棋盘格不算透明。
+
 统一调用`scripts/imagegen.mjs`，协议为OpenAI兼容Images API，默认模型gpt-image-2.5-1k（1K档，已实测）。
 
 ## 配置
@@ -18,7 +20,7 @@ HV_IMAGE_SIZE=1536x1024          # 可选，默认1024x1024
 ## 调用
 
 ```
-node scripts/imagegen.mjs --prompt "<英文提示词>" --out <项目>/assets/gen/c01_bg.png
+node scripts/imagegen.mjs --prompt "<独立主体提示词>" --out <项目>/assets/gen/c01_illustration.png --background transparent
 node scripts/imagegen.mjs --prompt "..." --out ... --ref <项目>/assets/gen/style_key.png   # 参考图保持画风，多张用逗号分隔
 node scripts/imagegen.mjs --prompt "..." --out ... --background transparent              # 透明底分层素材
 ```
@@ -32,7 +34,7 @@ node scripts/imagegen.mjs --prompt "..." --out ... --background transparent     
 
 ## 分层出图（配合[镜头运动](motion.md)）
 
-1. 先出一张**画风定调图**（style key），确认后作为后续所有镜头的`-Ref`。
-2. 每个镜头按层分别生成：背景（天空、远山）、中景（主体）、前景（虚化遮挡物），前景与中景用`-Background transparent`。
-3. 提示词写清本层内容、光源方向与时段，与相邻镜头保持一致；同一地点复用同一参考图。
+1. 先以实际地图和代表插图建立风格样张；已有合适素材时不额外生图。
+2. 按镜头需要生成独立人物、建筑或道具插图，使用--background transparent；不生成天空、远山或完整场景。
+3. 提示词写明主体、时代、状态与画风，已锁定的主体参考用于一致性；在实际地图上检查比例、Alpha边缘及地名遮挡。
 4. 生成后实际检查：印章、水印、文字、人脸、时代错误（衣冠、船型、建筑）。不合格重生成或编辑，不以“提示词已排除”为合格。
