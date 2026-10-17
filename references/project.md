@@ -59,6 +59,23 @@
 - `fact: true` 的句子必须被某条 `evidence.ids` 覆盖；`status` 为 verified 才能交稿。
 - `pause` 为该句后的停顿：数字（0.3–1.5秒）或档位`beat`/`turn`/`breath`/`hold`（0.35/0.6/1.0/1.5），省略为`beat`。>0.6秒须写`pauseWhy`。
 - `script.tail`为最后一句之后的结尾留白秒数，默认2，上限5；计入`timeline.total`，镜头总时长须覆盖。旧工程升级后须重跑timeline再跑gate。
+- 单句字数上限（40字）核对的是`tts`文本，不是正文`text`：正文可以写完整的句子，字幕按标点与长度自动分块；`text`超过60字只给WARN。为过检查把正文切碎会损害口播质量。
+
+## script-review.md
+
+口播人工验收记录的载体，gate只核对首部两行，不评价内容质量：
+
+```md
+review-version: 6
+review-audio: 未试听
+
+# 口播验收
+检查段落：开头 / 鄱阳湖 / 蓝玉案 / 结尾
+原句与处理：……
+尚存问题：……
+```
+
+`review-version`须等于当前`script.json`的`version`，改稿后复核受影响部分再更新；`review-audio`只能是`已试听`或`未试听`。缺文件、版本不符或缺任一行，脚本门失败。内容部分按[研究规范](research.md#口播人工验收交稿前完成配音前复核)逐段记录，不预填“已通过”。
 
 ## shots.json
 

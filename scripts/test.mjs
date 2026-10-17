@@ -45,6 +45,7 @@ function project(count = 2) {
   const sentences = Array.from({ length: count }, (_, i) => ({ id: 's' + String(i + 1).padStart(3, '0'), text: '甲乙丙丁戊己？', fact: false }));
   json(dir, 'project.json', { confirmed: { script: 1, plan: 1, hook: 1 }, ...(count < 10 ? { durationMinutes: { min: 0.01, max: 1 } } : {}) });
   json(dir, 'script.json', { version: 1, hookSentences: 1, titles: ['甲', '乙', '丙'], hooks: [1, 2, 3].map(() => ({ text: '甲？', evidence: '测试文献' })), sentences, evidence: [] });
+  writeFileSync(join(dir, 'script-review.md'), 'review-version: 1\nreview-audio: 未试听\n\n# 口播验收\n\n测试夹具，非真实验收。\n');
   const durations = {}, aligns = {};
   for (const sentence of sentences) {
     const raw = join(dir, 'audio/raw', sentence.id + '.mp3'), trim = join(dir, 'audio/trim', sentence.id + '.wav');
@@ -380,4 +381,46 @@ test('320句实际拼接达到10–20分钟且无Windows命令行长度问题', 
   success(node('gate.mjs', dir));
   const probe = run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', join(dir, 'voice.wav')]); success(probe);
   assert.ok(Math.abs(Number(probe.stdout.trim()) - (320 * 2 + 319 * 0.35 + 2)) < 0.002);
+});
+
+test('配音单句≤40字：正文可更长，超限按TTS文本判定', () => {
+  const dir = project(), file = join(dir, 'script.json'), script = readJson(file);
+  // 正文靠标点撑到50字符，实际内容25字，TTS 25字：应通过
+  script.sentences = [{ id: 's001', text: '甲，'.repeat(24) + '甲？', tts: '甲'.repeat(24) + '甲？', fact: false }];
+  json(dir, 'script.json', script);
+  success(node('gate.mjs', dir, '--stage', 'script'));
+  // TTS 内容45字：应失败，且报错指向配音单句
+  script.sentences = [{ id: 's001', text: '甲，'.repeat(44) + '甲？', tts: '甲'.repeat(44) + '甲？', fact: false }];
+  json(dir, 'script.json', script);
+  const r = node('gate.mjs', dir, '--stage', 'script');
+  failed(r); assert.match(r.stdout, /配音单句≤40字/);
+});
+
+test('口播验收记录缺失、版本不符或未声明试听状态均失败', () => {
+  const dir = project(), review = join(dir, 'script-review.md');
+  rmSync(review);
+  failed(node('gate.mjs', dir, '--stage', 'script'));
+  assert.match(node('gate.mjs', dir, '--stage', 'script').stdout, /script-review\.md/);
+  writeFileSync(review, 'review-version: 2\nreview-audio: 未试听\n');
+  assert.match(node('gate.mjs', dir, '--stage', 'script').stdout, /不一致/);
+  writeFileSync(review, 'review-version: 1\n');
+  assert.match(node('gate.mjs', dir, '--stage', 'script').stdout, /review-audio/);
+  writeFileSync(review, 'review-version: 1\nreview-audio: 未试听\n');
+  success(node('gate.mjs', dir, '--stage', 'script'));
+});
+
+test('文风体检只报告不阻断，指标可被基线对比', () => {
+  const dir = project(), r = node('style-report.mjs', dir, '--json');
+  success(r);
+  const out = JSON.parse(r.stdout);
+  assert.equal(out.metrics.sentences, 2);
+  assert.ok(Array.isArray(out.hints));
+  // 碎句、设问密集时给出提示，但仍不改退出码
+  const file = join(dir, 'script.json'), script = readJson(file);
+  script.sentences = Array.from({ length: 20 }, (_, i) => ({ id: 's' + String(i + 1).padStart(3, '0'), text: '甲？乙？', fact: false }));
+  json(dir, 'script.json', script);
+  const hot = node('style-report.mjs', dir, '--json');
+  success(hot);
+  assert.ok(JSON.parse(hot.stdout).hints.length > 0);
+  failed(node('style-report.mjs', dir, '--json', '--strict'));
 });

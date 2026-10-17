@@ -30,7 +30,10 @@ if (script) {
   gate('稿子版本有效', positiveVersion(script.version));
   gate('句子非空、ID合法且唯一', sentences.length && ids.every(safeId) && new Set(ids).size === ids.length);
   gate('文案及TTS文本有效', sentences.every(s => typeof s.text === 'string' && s.text.trim() && typeof ttsText(s) === 'string' && ttsText(s).trim()));
-  gate('单句≤40字', sentences.every(s => typeof s.text === 'string' && [...s.text].length <= 40));
+  // 40字是配音切句的技术上限，不是文风要求（见 research.md「解说文风」）；正文句允许更长，由字幕自动分块。
+  gate('配音单句≤40字（正文句长不设限）', sentences.every(s => [...String(ttsText(s) ?? '')].length <= 40));
+  const tooLong = sentences.filter(s => [...String(s.text ?? '')].length > 60).map(s => s.id);
+  if (tooLong.length) warnings.push('正文单句超过60字：' + tooLong.slice(0, 8).join(',') + (tooLong.length > 8 ? '等' + tooLong.length + '句' : '') + '。字幕会自动分块，确认节奏与可读性');
   gate('TTS文本无阿拉伯数字', sentences.every(s => !/\d/.test(ttsText(s))));
   gate('每句标明是否事实', sentences.every(s => typeof s.fact === 'boolean'));
   const numeric = /\d|[零〇一二三四五六七八九十百千万亿两]+(年|万|亿)|[十百千万亿][余多]?(人|骑|兵|户|里)/;
@@ -73,6 +76,17 @@ if (script) {
   });
   gate('证据摘录可在原文快照中检索到', evidence.length === 0 || !anchorBad.length, anchorBad.slice(0, 5).join('；'));
   gate('无标题党套话', sentences.every(s => !/史书不敢写|所有人都被骗|震惊|惊天/.test(s.text)));
+  // 口播人工验收痕迹：只校验"做过、且是当前版本"，不判断写得好不好（质量仍须人工）。
+  attempt('口播验收记录存在且版本匹配', () => {
+    const file = join(dir, 'script-review.md');
+    const hint = `在 script-review.md 首部写 review-version: ${script.version} 与 review-audio: 已试听|未试听`;
+    if (!existsSync(file)) throw new Error('缺少 script-review.md：' + hint);
+    const head = readFileSync(file, 'utf8').split(/\r?\n/).slice(0, 12).join('\n');
+    const v = head.match(/^\s*review-version:\s*(\d+)\s*$/m), a = head.match(/^\s*review-audio:\s*(已试听|未试听)\s*$/m);
+    if (!v) throw new Error('script-review.md 首部缺少 review-version：' + hint);
+    if (Number(v[1]) !== script.version) throw new Error(`验收记录版本 ${v[1]} 与稿子版本 ${script.version} 不一致：改稿后须复核受影响部分并更新该行`);
+    if (!a) throw new Error('script-review.md 首部缺少 review-audio: 已试听 或 未试听（未试听音频时不得声称做过听觉验收）');
+  });
 }
 if (stage !== 'script') {
   gate('当前稿子已确认', script && proj?.confirmed?.script === script.version);

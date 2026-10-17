@@ -118,7 +118,7 @@ node scripts/doctor.mjs "projects/朱元璋"
 | --- | --- |
 | `project.json` | 主题、阶段、规格、确认记录 |
 | `script.json` | 逐句文案、配音文本、标题、开场与证据 |
-| `script-review.md` | 当前版本的口播人工复核记录 |
+| `script-review.md` | 当前版本的口播人工复核记录；首部两行声明版本与试听状态 |
 | `shots.json` | 镜头、素材分层、落点及对应文案 |
 | `sources/` | 核查所用的原文快照 |
 | `timeline.json` | 配音时间轴 |
@@ -137,6 +137,14 @@ node scripts/gate.mjs "projects/朱元璋" --stage script
 
 结构检查能核对字段、证据记录及相应阶段的数据一致性，不能证明史实正确、口播自然或画面好看。这些仍需人工复核。
 
+写稿阶段可以额外跑一次文风体检，看碎句率、设问密度、抽象词密度等统计，并与上一版对比：
+
+```sh
+node scripts/style-report.mjs "projects/朱元璋" --baseline 上一版/script.json
+```
+
+它只指出可疑位置，不改退出码，也不判定文风好坏；是否回改由人决定。
+
 字幕对齐真实配音，不按字数平均分配时间。地图需要与故事年代匹配；缺少历史边界时，使用地形与地点，不拿别的年代疆域代替。网络图片与音乐还需核对来源和使用许可。
 
 ## 目录导航
@@ -152,5 +160,5 @@ node scripts/gate.mjs "projects/朱元璋" --stage script
 维护脚本后，在仓库目录运行回归检查：
 
 ```sh
-node --test scripts/test.mjs
+node --test
 ```
