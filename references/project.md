@@ -75,7 +75,7 @@ review-audio: 未试听
 尚存问题：……
 ```
 
-`review-version`须等于当前`script.json`的`version`，改稿后复核受影响部分再更新；`review-audio`只能是`已试听`或`未试听`。缺文件、版本不符或缺任一行，脚本门失败。内容部分按[研究规范](research.md#口播人工验收交稿前完成配音前复核)逐段记录，不预填“已通过”。
+`review-version`须等于当前`script.json`的`version`，改稿后复核受影响部分再更新；`review-audio`只能是`已试听`或`未试听`。缺文件、版本不符或缺任一行，脚本门失败。内容部分按[研究规范](research.md#口播人工验收交稿前完成配音前复核)逐段记录，不预填“已通过”。已写入`confirmed.export`的历史工程不追溯否定，只给WARN；新工程和未导出的稿子必须补齐。
 
 ## shots.json
 

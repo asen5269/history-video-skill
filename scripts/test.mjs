@@ -424,3 +424,11 @@ test('文风体检只报告不阻断，指标可被基线对比', () => {
   assert.ok(JSON.parse(hot.stdout).hints.length > 0);
   failed(node('style-report.mjs', dir, '--json', '--strict'));
 });
+
+test('已确认导出的历史工程缺验收记录只警告，不追溯否定', () => {
+  const dir = project(); complete(dir);
+  const p = readJson(join(dir, 'project.json')); p.confirmed.export = true; json(dir, 'project.json', p);
+  rmSync(join(dir, 'script-review.md'));
+  const r = node('gate.mjs', dir);
+  success(r); assert.match(r.stdout, /不追溯否定/);
+});

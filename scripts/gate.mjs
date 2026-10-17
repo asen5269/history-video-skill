@@ -77,7 +77,9 @@ if (script) {
   gate('证据摘录可在原文快照中检索到', evidence.length === 0 || !anchorBad.length, anchorBad.slice(0, 5).join('；'));
   gate('无标题党套话', sentences.every(s => !/史书不敢写|所有人都被骗|震惊|惊天/.test(s.text)));
   // 口播人工验收痕迹：只校验"做过、且是当前版本"，不判断写得好不好（质量仍须人工）。
-  attempt('口播验收记录存在且版本匹配', () => {
+  // 已确认导出的历史工程不追溯否定，只警告；未导出的稿子必须补齐记录。
+  let reviewProblem = null;
+  try {
     const file = join(dir, 'script-review.md');
     const hint = `在 script-review.md 首部写 review-version: ${script.version} 与 review-audio: 已试听|未试听`;
     if (!existsSync(file)) throw new Error('缺少 script-review.md：' + hint);
@@ -86,7 +88,10 @@ if (script) {
     if (!v) throw new Error('script-review.md 首部缺少 review-version：' + hint);
     if (Number(v[1]) !== script.version) throw new Error(`验收记录版本 ${v[1]} 与稿子版本 ${script.version} 不一致：改稿后须复核受影响部分并更新该行`);
     if (!a) throw new Error('script-review.md 首部缺少 review-audio: 已试听 或 未试听（未试听音频时不得声称做过听觉验收）');
-  });
+  } catch (e) { reviewProblem = e.message; }
+  if (!reviewProblem) gate('口播验收记录存在且版本匹配', true);
+  else if (proj?.confirmed?.export != null) warnings.push('口播验收记录未覆盖当前稿子（已确认导出，不追溯否定）：' + reviewProblem);
+  else gate('口播验收记录存在且版本匹配', false, reviewProblem);
 }
 if (stage !== 'script') {
   gate('当前稿子已确认', script && proj?.confirmed?.script === script.version);
