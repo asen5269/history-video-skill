@@ -92,6 +92,78 @@ export class HistoryMap {
     c.restore();
   }
   logical(coordinates) { const p = this.project(coordinates); return [p[0] * 1920 / this.width, p[1] * 1080 / this.height]; }
+  style() {
+    const s = this.scene.style ?? {};
+    return {
+      seaTop: s.seaTop ?? '#c6d9dd', seaBottom: s.seaBottom ?? '#a9c3ca',
+      terrainContrast: s.terrainContrast ?? 1.16, terrainSaturate: s.terrainSaturate ?? .74, terrainBrightness: s.terrainBrightness ?? 1.02,
+      landTint: s.landTint ?? 'rgba(233,222,196,.42)',
+      coastInk: s.coastInk ?? 'rgba(52,68,64,.42)',
+      riverInk: s.riverInk ?? 'rgba(58,88,94,.34)', riverCore: s.riverCore ?? '#8ec4cd',
+      regionCasing: s.regionCasing ?? 'rgba(36,46,42,.46)', regionInner: s.regionInner ?? 'rgba(255,250,234,.42)',
+      grainAlpha: s.grainAlpha ?? .16,
+    };
+  }
+  // 固定种子的纸纹/水纹颗粒：确定性，seek 回同一帧结果一致
+  pattern() {
+    if (this.grain) return this.grain;
+    const n = 128, cv = document.createElement('canvas'); cv.width = cv.height = n;
+    const g = cv.getContext('2d'), img = g.createImageData(n, n);
+    let seed = 20260101;
+    for (let i = 0; i < n * n; i++) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      const v = 128 + ((seed >> 16) % 44) - 22;
+      img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+    this.grain = this.ctx.createPattern(cv, 'repeat');
+    return this.grain;
+  }
+  sea(st) {
+    const c = this.ctx, w = this.width, h = this.height;
+    const g = c.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, st.seaTop); g.addColorStop(1, st.seaBottom);
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    c.save(); c.globalAlpha = st.grainAlpha * .5; c.fillStyle = this.pattern(); c.fillRect(0, 0, w, h); c.restore();
+    const v = c.createRadialGradient(w / 2, h / 2, h * .3, w / 2, h / 2, h * 1.02);
+    v.addColorStop(0, 'rgba(20,36,40,0)'); v.addColorStop(1, 'rgba(20,36,40,.24)');
+    c.fillStyle = v; c.fillRect(0, 0, w, h);
+  }
+  // 地形只贴在陆地内，与纸色混合；海面留给自己画
+  landBase(st) {
+    const c = this.ctx, [x0, y0, x1, y1] = this.basemap.extent;
+    c.save(); c.clip(this.land, 'evenodd');
+    if (typeof c.filter === 'string') c.filter = `contrast(${st.terrainContrast}) saturate(${st.terrainSaturate}) brightness(${st.terrainBrightness})`;
+    c.drawImage(this.terrain, x0, y0, x1 - x0, y1 - y0);
+    if (typeof c.filter === 'string') c.filter = 'none';
+    c.globalCompositeOperation = 'soft-light';
+    c.fillStyle = st.landTint; c.fillRect(x0, y0, x1 - x0, y1 - y0);
+    c.globalCompositeOperation = 'source-over';
+    c.globalAlpha = st.grainAlpha * .7; c.fillStyle = this.pattern(); c.fillRect(x0, y0, x1 - x0, y1 - y0);
+    c.restore();
+  }
+  // 海岸：三层递减白晕 + 一条墨线，替代原来的单条白描边
+  coast(st) {
+    const c = this.ctx, k = this.width / 1920 / this.scale;
+    c.save(); c.lineJoin = 'round';
+    for (const [w, a] of [[12, .08], [7, .16], [3.4, .5]]) {
+      c.lineWidth = w * k; c.strokeStyle = `rgba(252,248,234,${a})`; c.stroke(this.land);
+    }
+    c.lineWidth = 1.15 * k; c.strokeStyle = st.coastInk; c.stroke(this.land);
+    c.restore();
+  }
+  // 水系：先压一层暗岸，再压亮芯，形成河岸感
+  river(st) {
+    const c = this.ctx, k = this.width / 1920 / this.scale;
+    const color = this.scene.riverColor ?? st.riverCore;
+    const list = this.rivers.filter(r => r.rank <= (this.scene.riverRank ?? 3)).sort((a, b) => b.rank - a.rank);
+    c.save(); c.lineJoin = 'round'; c.lineCap = 'round';
+    c.strokeStyle = st.riverInk;
+    for (const r of list) { c.lineWidth = (r.rank < 2 ? 3.6 : 2) * k; c.stroke(r.path); }
+    c.strokeStyle = color;
+    for (const r of list) { c.lineWidth = (r.rank < 2 ? 1.9 : 1.05) * k; c.stroke(r.path); }
+    c.restore();
+  }
   draw() {
     const c = this.ctx, scene = this.scene, time = this.time;
     const camera = cameraAt(scene.camera, time);
@@ -100,34 +172,49 @@ export class HistoryMap {
     if(scene.labelLayout!==false){this.occupied.push({x:1800,y:900,w:120,h:180});}
     this.scale = this.width / (camera.span / 360);
     this.tx = this.width / 2 - camera.center[0] * this.scale; this.ty = this.height / 2 - camera.center[1] * this.scale;
-    c.resetTransform(); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
-    c.fillStyle = '#9ebccf'; c.fillRect(0, 0, this.width, this.height);
+    const st = this.style();
+    c.resetTransform(); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.filter = 'none'; c.setLineDash([]);
+    this.sea(st);
     this.map();
     const [x0, y0, x1, y1] = this.basemap.extent;
-    c.drawImage(this.terrain, x0, y0, x1 - x0, y1 - y0);
+    this.landBase(st);
     if (scene.theme === 'neutral') {
-      c.save(); c.clip(this.land, 'evenodd'); c.fillStyle = 'rgba(150,144,151,0.56)'; c.fillRect(x0, y0, x1 - x0, y1 - y0); c.restore();
+      c.save(); c.clip(this.land, 'evenodd'); c.fillStyle = 'rgba(122,132,136,0.28)'; c.fillRect(x0, y0, x1 - x0, y1 - y0); c.restore();
     }
     const states = [];
+    const kk = this.width / 1920 / this.scale;
     for (const region of this.regions) {
       const opacity = this.opacity(region); if (!opacity) continue;
       const state = [...(region.states ?? [])].filter(s => s.time <= time).at(-1) ?? region;
       const active = { ...region, ...state }; states.push(active);
+      const path = this.paths.get(state);
       c.save(); c.clip(this.land, 'evenodd'); c.globalCompositeOperation = 'multiply';
-      c.globalAlpha = opacity * (active.opacity ?? 0.72); c.fillStyle = active.color ?? '#9f9d9c';
-      c.fill(this.paths.get(state), 'evenodd'); c.globalCompositeOperation = 'source-over'; c.globalAlpha = opacity;
-      c.lineWidth = (active.strokeWidth ?? 2) / this.scale * this.width / 1920;
+      c.globalAlpha = opacity * (active.opacity ?? 0.52); c.fillStyle = active.color ?? '#9f9d9c';
+      c.fill(path, 'evenodd');
+      c.globalCompositeOperation = 'source-over';
+      c.globalAlpha = opacity * st.grainAlpha * .55; c.fillStyle = this.pattern(); c.fill(path, 'evenodd');
+      c.globalAlpha = opacity;
+      // 填色会压平地形：在疆域内把山影重新叠回去，保留起伏
+      if (active.relief !== false) {
+        c.save(); c.clip(path, 'evenodd');
+        c.globalCompositeOperation = 'soft-light'; c.globalAlpha = opacity * (active.relief ?? 0.25);
+        c.drawImage(this.terrain, x0, y0, x1 - x0, y1 - y0);
+        // 山影会提亮中调，补一层薄色把政权色找回来
+        c.globalCompositeOperation = 'multiply'; c.globalAlpha = opacity * (active.wash ?? 0.34);
+        c.fillStyle = active.color ?? '#9f9d9c'; c.fill(path, 'evenodd');
+        c.globalCompositeOperation = 'source-over'; c.restore();
+      }
       c.lineJoin = 'round';
-      c.setLineDash((active.dash ?? []).map(v => v / this.scale * this.width / 1920));
-      c.strokeStyle = active.stroke ?? (scene.theme === 'neutral' ? '#efece4' : '#4c514a'); c.stroke(this.paths.get(state)); c.restore();
+      // 外暗描边 → 主描边 → 内亮线：让疆界有厚度，不再是单线贴纸
+      c.lineWidth = (active.casingWidth ?? 5.5) * kk; c.strokeStyle = st.regionCasing; c.stroke(path);
+      c.lineWidth = (active.strokeWidth ?? 2) * kk;
+      c.strokeStyle = active.stroke ?? (scene.theme === 'neutral' ? '#efece4' : '#4c514a');
+      c.setLineDash((active.dash ?? []).map(v => v * kk)); c.stroke(path); c.setLineDash([]);
+      c.lineWidth = .9 * kk; c.strokeStyle = st.regionInner; c.stroke(path);
+      c.restore();
     }
-    c.save(); c.clip(this.land, 'evenodd'); c.strokeStyle = scene.riverColor ?? '#459eb9'; c.globalAlpha = 0.88;
-    for (const river of this.rivers) {
-      if (river.rank > (scene.riverRank ?? 3)) continue;
-      c.lineWidth = (river.rank < 2 ? 2.3 : 1.2) / this.scale * this.width / 1920; c.stroke(river.path);
-    }
-    c.restore();
-    c.lineWidth = 1.4 / this.scale * this.width / 1920; c.strokeStyle = 'rgba(255,253,236,0.78)'; c.stroke(this.land);
+    this.coast(st);
+    c.save(); c.clip(this.land, 'evenodd'); this.river(st); c.restore();
     for (const route of scene.routes ?? []) {
       if (time < (route.start ?? 0)) continue;
       const progress = clamp((time - (route.start ?? 0)) / (route.duration ?? 5), 0, 1);
@@ -167,7 +254,7 @@ export class HistoryMap {
   flag(flag) {
     const alpha = this.opacity(flag); if (!alpha) return;
     const c = this.ctx, [x, y] = this.logical(flag.coordinates), color = flag.color ?? '#984632';
-    const height = flag.height ?? 244, width = flag.width ?? 90, cloth = height * 0.76;
+    const height = flag.height ?? 200, width = flag.width ?? 78, cloth = height * 0.76;
     const wave = Math.sin(this.time * 2.3 + (flag.phase ?? 0)) * 6;
     c.save(); c.globalAlpha = alpha; c.translate(x + (flag.dx ?? 0), y + (flag.dy ?? 0));
     c.strokeStyle = '#3a4140'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -height - 10); c.stroke();
@@ -177,10 +264,10 @@ export class HistoryMap {
       const p = new Path2D(); p.moveTo(left, top); p.bezierCurveTo(width*0.4, top + wave + 9, width*0.65, top + wave, right, top - 4);
       p.lineTo(right, bottom); p.bezierCurveTo(width*0.6, bottom + 15 + wave, width*0.35, bottom + 12, left, bottom - 2); p.closePath(); return p;
     };
-    c.fillStyle = color; c.shadowColor = '#29313135'; c.shadowBlur = 12; c.shadowOffsetY = 5; c.fill(clothPath(0));
-    c.shadowBlur = 0; c.shadowOffsetY = 0; c.lineWidth = 3; c.strokeStyle = '#fbf1d5b0'; c.stroke(clothPath(2));
-    c.fillStyle = flag.paper ?? '#f0e3c3'; c.globalAlpha = alpha * 0.87; c.fill(clothPath(10)); c.globalAlpha = alpha;
-    for (let i = 0; i < 7; i++) { const yy = -height + 12 + i * (cloth - 22)/7; c.fillStyle = color; c.fillRect(width - 2, yy, 10 + wave*0.3, 7); }
+    c.fillStyle = color; c.shadowColor = '#29313128'; c.shadowBlur = 8; c.shadowOffsetY = 3; c.fill(clothPath(0));
+    c.shadowBlur = 0; c.shadowOffsetY = 0; c.lineWidth = 2.4; c.strokeStyle = '#fbf1d5a8'; c.stroke(clothPath(2));
+    c.fillStyle = flag.paper ?? '#f0e3c3'; c.globalAlpha = alpha * 0.9; c.fill(clothPath(10)); c.globalAlpha = alpha;
+    for (let i = 0; i < 7; i++) { const yy = -height + 12 + i * (cloth - 22)/7; c.fillStyle = color; c.fillRect(width - 1, yy, 7 + wave*0.25, 6); }
     const size = flag.fontSize ?? Math.min(40, (cloth - 28) / [...flag.name].length);
     this.text(flag.name, width / 2 + 1, -height + cloth / 2 + 2, size, { vertical: true, halo: null, color: '#172b2b' });
     c.fillStyle = '#172b2b'; c.beginPath(); c.arc(0, 0, 8, 0, Math.PI*2); c.fill(); c.strokeStyle = '#fff7df'; c.lineWidth = 2; c.stroke();
