@@ -21,9 +21,9 @@ export function pauseOf(script, i) {
   return p;
 }
 export const ttsSpec = (text, protocol = 'v1') => protocol === 'v3' ?
-  { text, voice: 'zh_male_liufei_uranus_bigtts', speed: 1.1, encoding: 'mp3', protocol: 'v3',
+  { text, voice: 'zh_male_baqiqingshu_uranus_bigtts', speed: 1.1, encoding: 'mp3', protocol: 'v3',
     resourceId: 'seed-tts-2.0', sampleRate: 24000, bitRate: 160000, speechRate: 10, enableSubtitle: true } :
-  { text, voice: 'zh_male_liufei_uranus_bigtts', speed: 1.1, cluster: 'volcano_tts', encoding: 'mp3' };
+  { text, voice: 'zh_male_baqiqingshu_uranus_bigtts', speed: 1.1, cluster: 'volcano_tts', encoding: 'mp3' };
 export function validTtsMeta(meta, text) {
   if (!meta || (meta.protocol != null && !['v1', 'v3'].includes(meta.protocol))) return false;
   return Object.entries(ttsSpec(text, meta.protocol ?? 'v1')).every(([key, value]) => meta[key] === value);

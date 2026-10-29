@@ -22,6 +22,9 @@ const proj = load('project.json'), script = load('script.json');
 const squash = s => s.normalize('NFKC').replace(/[\s　]+/g, '');
 const expectedPause = i => { try { return pauseOf(script, i); } catch { return NaN; } };
 const fps = Number.isFinite(proj?.fps) && proj.fps > 0 ? proj.fps : 30;
+const hookTarget = proj?.hookTargetSeconds === undefined ? 5 : proj.hookTargetSeconds;
+const validHookTarget = Number.isFinite(hookTarget) && hookTarget > 0;
+gate('钩子时长提醒配置有效', validHookTarget, validHookTarget ? '' : 'hookTargetSeconds须为正数');
 const positiveVersion = x => Number.isInteger(x) && x > 0;
 let sentences = [], ids = [];
 if (script) {
@@ -148,7 +151,9 @@ if (stage === 'voice' || stage === 'subs') {
       warnings.push('总时长' + (timeline.total / 60).toFixed(1) + '分钟，超出' + range.min + '–' + range.max + '分钟：内容自然如此可保留，否则检查注水或压缩');
     gate('首句从0开始', items[0]?.start === 0);
     const hookEnd = Number.isInteger(script.hookSentences) && script.hookSentences > 0 ? items[script.hookSentences - 1]?.end : NaN;
-    gate('钩子≤5秒', hookEnd <= 5, hookEnd > 5 ? '实测' + hookEnd.toFixed(2) + '秒：缩短钩子句或拆成更短的句子' : '');
+    gate('钩子实测时长有效', Number.isFinite(hookEnd) && hookEnd > 0);
+    if (validHookTarget && Number.isFinite(hookEnd) && hookEnd > hookTarget)
+      warnings.push('开场钩子实测' + hookEnd.toFixed(2) + '秒，超过提醒目标' + hookTarget + '秒：人工复查入题与初步兑现，不为达标截断表达或统一加速');
     gate('时长、停顿及相邻偏移一致', items.length && items.every((it, i) =>
       Number.isFinite(it.start) && Number.isFinite(it.end) && it.start >= 0 && it.end > it.start &&
       Number.isFinite(it.pause) && it.pause >= 0 && it.pause <= TAIL_MAX &&
@@ -222,7 +227,7 @@ if (stage === 'subs') {
     if (JSON.stringify(subs) !== JSON.stringify(rebuilt)) throw new Error('字幕文字或时间过期，重跑srt');
     for (let i = 0; i < subs.length; i++) {
       const b = subs[i], item = timeline.items.find(it => it.id === b.id);
-      if (!item || !Number.isFinite(b.s) || !Number.isFinite(b.e) || b.s < item.start || b.e > item.end + 0.002 ||
+      if (!item || !Number.isFinite(b.s) || !Number.isFinite(b.e) || b.s < item.start - 0.000001 || b.e > item.end + 0.002 ||
           b.e <= b.s || (i && b.s < subs[i - 1].e - 0.001)) throw new Error('字幕时长、偏移或顺序无效');
     }
     if (readFileSync(join(dir, 'output.srt'), 'utf8').replace(/\r\n/g, '\n') !== srtText(subs))

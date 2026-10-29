@@ -1,12 +1,12 @@
 # 豆包配音规范
 
-默认使用V3双向WebSocket；2026-10-14已在用户环境用新版API Key、刘飞2.0实际返回可解码MP3。音色与语速保持用户设置。
+默认使用V3双向WebSocket；2026-10-25用户指定默认音色为霸气青叔2.0、1.1倍速。2026-10-14曾用刘飞2.0验证接口可用，该历史验证不代表当前音色。音色与语速保持用户设置。
 
 ## 请求
 
 - WSS `wss://openspeech.bytedance.com/api/v3/tts/bidirection`，依赖Python和`websockets>=15`；安装：`python -m pip install "websockets>=15"`。
 - 新鉴权：`X-Api-Key`读取`DOUBAO_TTS_API_KEY`；`X-Api-Resource-Id: seed-tts-2.0`。不存在新版Key时可用旧`APPID/TOKEN`，按[旧鉴权官方说明](https://docs.volcengine.com/docs/6561/2534847?lang=zh)发送`X-Api-App-Id`、`X-Api-Access-Key`与随机请求ID；不要把新版Key填到旧TOKEN字段。
-- 音色`zh_male_liufei_uranus_bigtts`，`audio_params.speech_rate: 10`对应原1.1倍速；MP3、24000Hz、160000bps、`enable_subtitle: true`。
+- 音色霸气青叔2.0：`zh_male_baqiqingshu_uranus_bigtts`（[官方音色表](https://docs.volcengine.com/docs/DoubaoVoice/Tonelist-1?lang=zh)），不可使用旧小模型`BV107_streaming`代替；`audio_params.speech_rate: 10`对应原1.1倍速；MP3、24000Hz、160000bps、`enable_subtitle: true`。`tts-v3.py`从`item.spec`读取音色、语速与编码，保证实际请求与`audio-cache.mjs`一致。
 - 二进制协议实现见`scripts/tts-v3.py`，依据用户提供的官方协议附件。建立连接→等待ConnectionStarted→StartSession→等待SessionStarted→TaskRequest→FinishSession→收音频与字幕直到SessionFinished；之后才允许下一句复用同一连接，最后FinishConnection。不能把这些事件当普通JSON WebSocket消息。
 - 收齐音频且SessionFinished后写MP3与hash元数据；服务拒绝、空音频、消息截断或超时则报错停止，不自动切换协议重复计费。接口升级不重置账户额度。
 - `node scripts/tts.mjs <项目>`默认V3。旧有效缓存仍可复用；`--ids s001`或`--force`按当前协议重合成。需旧HTTP时显式`--protocol v1`或`HV_TTS_PROTOCOL=v1`。

@@ -192,7 +192,7 @@ test('混音：改配音、改配置或篡改mix.wav后gate失败', () => {
   writeFileSync(join(dir, 'mix.wav'), wav(10));
   r = node('gate.mjs', dir, '--stage', 'mix'); failed(r); assert.match(r.stdout, /FAIL  mix.wav存在/);
 });
-test('非事实句含数字只警告；语速异常可用speedOk说明放行；钩子超时信息可操作', () => {
+test('非事实句含数字只警告；语速异常可用speedOk说明放行', () => {
   const dir = project(); complete(dir);
   const script = readJson(join(dir, 'script.json'));
   script.sentences[0].text = '此时明军损失五十万人？'; json(dir, 'script.json', script);
@@ -202,8 +202,24 @@ test('非事实句含数字只警告；语速异常可用speedOk说明放行；�
   r = node('gate.mjs', dir, '--stage', 'voice'); assert.match(r.stdout, /FAIL  语速无异常.*s001\(\d/);
   script.sentences[0].speedOk = '试听确认为快节奏长句'; json(dir, 'script.json', script);
   assert.doesNotMatch(node('gate.mjs', dir, '--stage', 'voice').stdout, /FAIL  语速无异常/);
-  tl = readJson(join(dir, 'timeline.json')); tl.items[0].end = 6; json(dir, 'timeline.json', tl);
-  r = node('gate.mjs', dir, '--stage', 'voice'); assert.match(r.stdout, /FAIL  钩子≤5秒  实测6\.00秒：缩短钩子句/);
+});
+test('真实长钩子只提醒，voice和subs均不因超时失败；目标可配置', () => {
+  const dir = project(4), script = readJson(join(dir, 'script.json'));
+  script.hookSentences = 3; json(dir, 'script.json', script);
+  const timeline = complete(dir);
+  for (const stage of ['voice', 'subs']) {
+    const r = node('gate.mjs', dir, '--stage', stage);
+    success(r); assert.match(r.stdout, /WARN  开场钩子实测6\.70秒，超过提醒目标5秒/);
+  }
+  const proj = readJson(join(dir, 'project.json'));
+  proj.hookTargetSeconds = timeline.items[2].end; json(dir, 'project.json', proj);
+  let r = node('gate.mjs', dir, '--stage', 'voice'); success(r); assert.doesNotMatch(r.stdout, /WARN  开场钩子/);
+  proj.hookTargetSeconds = 3; json(dir, 'project.json', proj);
+  r = node('gate.mjs', dir, '--stage', 'voice'); success(r); assert.match(r.stdout, /超过提醒目标3秒/);
+  for (const invalid of [0, -1, '8', null]) {
+    proj.hookTargetSeconds = invalid; json(dir, 'project.json', proj);
+    r = node('gate.mjs', dir, '--stage', 'voice'); failed(r); assert.match(r.stdout, /FAIL  钩子时长提醒配置有效/);
+  }
 });
 test('export门核对output.mp4的画幅、帧率、时长、音轨与字幕范围', () => {
   const dir = project(); complete(dir);
@@ -256,7 +272,8 @@ test('无音频时间轴不能通过voice门', () => {
 test('钩子索引无效不得以零秒通过', () => {
   const dir = project(); complete(dir);
   const script = readJson(join(dir, 'script.json')); script.hookSentences = 99; json(dir, 'script.json', script);
-  failed(node('gate.mjs', dir, '--stage', 'voice'));
+  const r = node('gate.mjs', dir, '--stage', 'voice');
+  failed(r); assert.match(r.stdout, /FAIL  钩子实测时长有效/);
 });
 test('改TTS文本或篡改音频使配音缓存失效', () => {
   const dir = project(), script = readJson(join(dir, 'script.json'));

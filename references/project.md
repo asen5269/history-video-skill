@@ -17,6 +17,7 @@
   "title": null,
   "engine": "remotion",           // 新工程默认remotion；兼容旧hyperframes；mixed主合成为Remotion
   "durationMinutes": { "min": 10, "max": 20 }, // 目标范围；超出只警告不阻断。用户改时长时更新
+  "hookTargetSeconds": 5,          // 可省；钩子实测超目标只提醒，不因长度阻断。须为正数
   "fps": 30, "width": 1920, "height": 1080,     // 可省，默认如左；镜头总时长门与export门按它们核对。engine为hyperframes/mixed时fps只能24/30/60
   "preview": null,                // 本地URL
   "notes": []                     // 用户偏好、返工记录
@@ -38,7 +39,7 @@
   "version": 3,
   "titles": ["…", "…", "…"],
   "hooks": [{ "text": "…", "evidence": "《明史·英宗本纪》…" }],
-  "hookSentences": 1,             // 钩子占前几句，gate 检查≤5秒
+  "hookSentences": 1,             // 实际开场钩子占前几句，超出project.hookTargetSeconds只提醒
   "sentences": [
     { "id": "s001", "text": "1449年…", "tts": "一四四九年…", "fact": true, "pause": 0.5 }
   ],

@@ -109,8 +109,10 @@ async def expect(ws, event, session=None):
 
 async def synthesize(ws, item, output):
     session = str(uuid.uuid4())
-    params = {'speaker': 'zh_male_liufei_uranus_bigtts', 'audio_params': {
-        'format': 'mp3', 'sample_rate': 24000, 'bit_rate': 160000, 'speech_rate': 10, 'enable_subtitle': True}}
+    spec = item['spec']
+    params = {'speaker': spec['voice'], 'audio_params': {
+        'format': spec['encoding'], 'sample_rate': spec['sampleRate'], 'bit_rate': spec['bitRate'],
+        'speech_rate': spec['speechRate'], 'enable_subtitle': spec['enableSubtitle']}}
     start = {'user': {'uid': 'history-video'}, 'namespace': 'BidirectionalTTS', 'event': 100, 'req_params': params}
     await ws.send(packet(100, start, session))
     await expect(ws, 150, session)
